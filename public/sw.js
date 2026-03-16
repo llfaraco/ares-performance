@@ -1,4 +1,4 @@
-var CACHE = 'ares-v1';
+var CACHE = 'ares-v3';
 
 self.addEventListener('install', function(event) {
   event.waitUntil(
