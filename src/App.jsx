@@ -23,7 +23,10 @@ var CSS=[
   "@keyframes popIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}",
   "@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}",
   "@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}",
-  ".au{animation:fadeUp .25s ease}.pop{animation:popIn .2s ease}",
+  "@keyframes slideDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}",
+  "@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}",
+  "@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}",
+  ".au{animation:fadeUp .25s ease}.pop{animation:popIn .2s ease}.sld{animation:slideDown .3s ease}.pls{animation:pulse .5s ease}",
 ].join("\n");
 
 /* ─── LEVELS ─────────────────────────────────────────────── */
@@ -39,6 +42,59 @@ function getNextLevel(cur){return LEVELS.find(function(l){return l.id===(cur?cur
 var XP_SESSION=50,XP_WEEK=200;
 var ADMIN_KEYS=["lucas","admin","teste","ares"];
 function getEffectivePlan(u){if(!u)return"free";var n=(u.name||"").toLowerCase(),e=(u.email||"").toLowerCase();return ADMIN_KEYS.some(function(k){return n.includes(k)||e.includes(k);})?"admin":u.plan||"free";}
+
+/* ─── BADGES / CONQUISTAS ─────────────────────────────────── */
+var BADGES=[
+  {id:"first_session",icon:"🚀",name:"Primeira Missão",desc:"1ª sessão registrada",color:"#FF9500"},
+  {id:"sessions_7",icon:"🔥",name:"Em Chamas",desc:"7 sessões registradas",color:C.red},
+  {id:"sessions_30",icon:"💪",name:"Dedicado",desc:"30 sessões completas",color:C.blue},
+  {id:"sessions_100",icon:"👑",name:"Lenda",desc:"100 sessões completas",color:"#FFD700"},
+  {id:"perfect_week",icon:"⚡",name:"Semana Perfeita",desc:"100% de aderência em 1 semana",color:C.amber},
+  {id:"cycle_complete",icon:"🏆",name:"Ciclo Completo",desc:"12 semanas concluídas",color:"#FFD700"},
+  {id:"level_up",icon:"📈",name:"Evolução",desc:"Suba do nível Iniciante",color:C.green},
+  {id:"level_elite",icon:"💎",name:"Elite",desc:"Alcance o nível Elite",color:"#9B59B6"},
+  {id:"streak_4",icon:"🔗",name:"4 Semanas",desc:"4 semanas seguidas com treino",color:C.indigo},
+  {id:"xp_500",icon:"⭐",name:"500 XP",desc:"Acumule 500 pontos de XP",color:C.amber},
+  {id:"xp_2000",icon:"🌟",name:"2000 XP",desc:"Acumule 2000 pontos de XP",color:"#FFD700"},
+  {id:"warrior",icon:"⚔️",name:"Guerreiro",desc:"50 sessões registradas",color:C.indigo},
+];
+function badgeEarned(b,activity){
+  if(!activity)return false;
+  var sess=(activity.sessions||[]).length,xp=activity.xp||0,plan=activity.plan;
+  switch(b.id){
+    case"first_session":return sess>=1;
+    case"sessions_7":return sess>=7;
+    case"sessions_30":return sess>=30;
+    case"sessions_100":return sess>=100;
+    case"warrior":return sess>=50;
+    case"perfect_week":return plan?plan.weeks.some(function(w){return w.sessions.length>0&&w.sessions.every(function(s){return s.completed;});}):false;
+    case"cycle_complete":return plan?plan.weeks.every(function(w){return w.sessions.length===0||w.sessions.every(function(s){return s.completed;});}):false;
+    case"level_up":return xp>=500;
+    case"level_elite":return getLevel(xp).id==="elite";
+    case"streak_4":{if(!plan)return false;var sk=0,mx=0;plan.weeks.forEach(function(w){if(w.sessions.filter(function(s){return s.completed;}).length>0){sk++;if(sk>mx)mx=sk;}else sk=0;});return mx>=4;}
+    case"xp_500":return xp>=500;
+    case"xp_2000":return xp>=2000;
+    default:return false;
+  }
+}
+function computeBadges(activity){return BADGES.map(function(b){return Object.assign({},b,{earned:badgeEarned(b,activity)});});}
+
+/* ─── WEEKLY CHALLENGES ───────────────────────────────────── */
+function getWeekChallenges(activity){
+  var sessions=activity?activity.sessions||[]:[];
+  var plan=activity?activity.plan:null;
+  var cw=plan?plan.weeks[(plan.currentWeek||1)-1]:null;
+  var weekDone=cw?cw.sessions.filter(function(s){return s.completed;}).length:0;
+  var weekTotal=Math.max(cw?cw.sessions.length:4,1);
+  var recent=sessions.slice(0,7);
+  var avgRpe=recent.length?parseFloat((recent.reduce(function(a,s){return a+(+s.rpe||7);},0)/recent.length).toFixed(1)):0;
+  var totalVol=recent.reduce(function(a,s){return a+(s.exercises?s.exercises.reduce(function(b,e){return b+(parseInt(e.sets||0)*parseInt(e.reps||0)*parseInt(e.kg||0));},0):0);},0);
+  return[
+    {id:"c_sess",icon:"🎯",name:"Complete "+weekTotal+" sessões",desc:"Semana 100% no plano",goal:weekTotal,current:weekDone,unit:"sessões",color:C.red,xp:200},
+    {id:"c_rpe",icon:"💥",name:"RPE médio ≥ 7",desc:"Intensidade alta esta semana",goal:7,current:avgRpe,unit:"/10",color:C.amber,xp:100},
+    {id:"c_vol",icon:"🏋️",name:"10.000 kg volume",desc:"Volume semanal acumulado",goal:10000,current:Math.min(totalVol,10000),unit:"kg",color:C.blue,xp:150},
+  ];
+}
 
 /* ─── SPORTS ─────────────────────────────────────────────── */
 var SPORTS=[
@@ -525,6 +581,124 @@ function XPBar({xp}){
   </div>;
 }
 
+/* ─── CHALLENGES CARD ─────────────────────────────────────── */
+function ChallengesCard({activity}){
+  var challenges=getWeekChallenges(activity);
+  var doneCount=challenges.filter(function(c){return c.current>=c.goal;}).length;
+  var bonusXP=challenges.reduce(function(a,c){return a+(c.current>=c.goal?c.xp:0);},0);
+  return<div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"14px 16px",marginBottom:12}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+      <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase"}}>DESAFIOS DA SEMANA</div>
+      <div style={{display:"flex",alignItems:"center",gap:5}}>
+        {bonusXP>0&&<span style={{background:C.green+"14",color:C.green,fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:4,border:"1px solid "+C.green+"22"}}>{"+"+bonusXP+" XP"}</span>}
+        <span style={{background:doneCount===challenges.length?C.green+"14":C.amber+"14",color:doneCount===challenges.length?C.green:C.amber,fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:4}}>{doneCount+"/"+challenges.length}</span>
+      </div>
+    </div>
+    <div style={{display:"flex",flexDirection:"column",gap:12}}>
+      {challenges.map(function(ch){
+        var pct=ch.goal>0?Math.min(100,Math.round((ch.current/ch.goal)*100)):0;
+        var done=pct>=100;
+        return<div key={ch.id}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
+            <div style={{display:"flex",alignItems:"center",gap:8}}>
+              <span style={{fontSize:15}}>{ch.icon}</span>
+              <div>
+                <div style={{fontWeight:700,fontSize:12,color:done?C.green:C.text}}>{ch.name}{done&&<span style={{fontSize:10,marginLeft:4}}>✓</span>}</div>
+                <div style={{color:C.grayLight,fontSize:10}}>{ch.desc}</div>
+              </div>
+            </div>
+            <div style={{textAlign:"right",flexShrink:0,minWidth:44}}>
+              <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:15,color:done?C.green:ch.color,lineHeight:1}}>
+                {typeof ch.current==="number"&&ch.current%1!==0?ch.current.toFixed(1):Math.min(ch.current,ch.goal)}
+                <span style={{fontSize:8,color:C.grayLight,fontFamily:"Inter,sans-serif",fontWeight:400}}>{"/"+(ch.goal)}</span>
+              </div>
+              <div style={{color:C.grayLight,fontSize:8}}>{ch.unit}</div>
+            </div>
+          </div>
+          <div style={{background:C.faint,borderRadius:99,height:5,overflow:"hidden"}}>
+            <div style={{height:"100%",width:pct+"%",background:done?"linear-gradient(90deg,"+C.green+",#28d463)":"linear-gradient(90deg,"+ch.color+"99,"+ch.color+")",borderRadius:99,transition:"width .9s ease"}}/>
+          </div>
+          {done&&<div style={{marginTop:3,color:C.green,fontSize:9,fontWeight:700}}>{"🎉 +"+ch.xp+" XP ganhos!"}</div>}
+        </div>;
+      })}
+    </div>
+  </div>;
+}
+
+/* ─── BADGES VIEW ─────────────────────────────────────────── */
+function BadgesView({activity,compact=false}){
+  var badges=computeBadges(activity);
+  var earned=badges.filter(function(b){return b.earned;});
+  var locked=badges.filter(function(b){return!b.earned;});
+  if(compact)return<div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"14px 16px",marginBottom:12}}>
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+      <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase"}}>CONQUISTAS</div>
+      <span style={{background:C.red+"14",color:C.red,fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:4}}>{earned.length+"/"+badges.length}</span>
+    </div>
+    <div style={{display:"flex",gap:7,flexWrap:"wrap",alignItems:"center"}}>
+      {earned.length===0
+        ?<div style={{color:C.grayLight,fontSize:11,paddingBottom:2}}>Complete treinos para desbloquear 🎯</div>
+        :earned.slice(0,8).map(function(b){return<div key={b.id} title={b.name+": "+b.desc} style={{width:38,height:38,borderRadius:8,background:b.color+"18",border:"1px solid "+b.color+"33",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>{b.icon}</div>;})}
+      {earned.length<8&&locked.slice(0,6-Math.min(earned.length,6)).map(function(b){return<div key={b.id} style={{width:38,height:38,borderRadius:8,background:C.faint,border:"1px solid "+C.border,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,filter:"grayscale(1)",opacity:.3}}>{b.icon}</div>;})}
+    </div>
+  </div>;
+  return<div style={{display:"flex",flexDirection:"column",gap:14}}>
+    {earned.length>0&&<div>
+      <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",marginBottom:10}}>{"DESBLOQUEADAS ("+earned.length+")"}</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+        {earned.map(function(b){return<div key={b.id} className="au" style={{background:b.color+"0F",border:"1px solid "+b.color+"28",borderRadius:8,padding:"14px 8px",textAlign:"center"}}>
+          <div className="pls" style={{fontSize:30,marginBottom:5}}>{b.icon}</div>
+          <div style={{fontWeight:700,fontSize:10,color:C.text,lineHeight:1.3}}>{b.name}</div>
+          <div style={{color:C.grayLight,fontSize:8,marginTop:3,lineHeight:1.4}}>{b.desc}</div>
+        </div>;})}
+      </div>
+    </div>}
+    {locked.length>0&&<div>
+      <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",marginBottom:10}}>{"BLOQUEADAS ("+locked.length+")"}</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+        {locked.map(function(b){return<div key={b.id} style={{background:C.faint,border:"1px solid "+C.border,borderRadius:8,padding:"14px 8px",textAlign:"center",opacity:.5}}>
+          <div style={{fontSize:30,marginBottom:5,filter:"grayscale(1)"}}>{b.icon}</div>
+          <div style={{fontWeight:700,fontSize:10,color:C.gray,lineHeight:1.3}}>{b.name}</div>
+          <div style={{color:C.grayLight,fontSize:8,marginTop:3,lineHeight:1.4}}>{b.desc}</div>
+        </div>;})}
+      </div>
+    </div>}
+  </div>;
+}
+
+/* ─── LEADERBOARD VIEW ────────────────────────────────────── */
+function LeaderboardView({user,activity}){
+  var sp=activity?SPORTS.find(function(s){return s.id===activity.sport;}):null;
+  var myXp=activity?activity.xp||0:0;
+  var myName=user?user.name:"Você";
+  var mock=[
+    {name:"Lucas M.",sport:"Flag Football",xp:4820,avatar:"L"},
+    {name:"Rafael S.",sport:"MMA",xp:3940,avatar:"R"},
+    {name:"Gabriel T.",sport:"Musculação",xp:3120,avatar:"G"},
+    {name:"Pedro A.",sport:"CrossFit",xp:2840,avatar:"P"},
+    {name:"Thiago B.",sport:"Futebol",xp:1920,avatar:"T"},
+  ];
+  var all=[{name:myName,sport:sp?sp.name:"—",xp:myXp,avatar:myName.charAt(0).toUpperCase(),isMe:true}].concat(mock);
+  all.sort(function(a,b){return b.xp-a.xp;});
+  var medals=["🥇","🥈","🥉"];
+  return<div style={{display:"flex",flexDirection:"column",gap:6}}>
+    <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",marginBottom:4}}>RANKING GLOBAL</div>
+    {all.map(function(a,i){return<div key={i} className={a.isMe?"au":""} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:a.isMe?C.red+"0A":C.white,borderRadius:8,border:"1px solid "+(a.isMe?C.red+"33":C.border)}}>
+      <div style={{width:24,textAlign:"center",fontSize:i<3?16:10,color:i>=3?C.grayLight:""}}>{i<3?medals[i]:"#"+(i+1)}</div>
+      <div style={{width:34,height:34,borderRadius:7,background:a.isMe?C.red:C.faint,display:"flex",alignItems:"center",justifyContent:"center",color:a.isMe?"#fff":C.gray,fontFamily:"'Bebas Neue',sans-serif",fontSize:14,border:"1px solid "+(a.isMe?C.redDk:C.border),flexShrink:0}}>{a.avatar}</div>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{fontWeight:700,fontSize:12,color:a.isMe?C.red:C.text}}>{a.name}{a.isMe&&<span style={{fontSize:9,background:C.red+"14",color:C.red,padding:"0 5px",borderRadius:3,marginLeft:5}}>você</span>}</div>
+        <div style={{color:C.grayLight,fontSize:10,marginTop:1}}>{a.sport}</div>
+      </div>
+      <div style={{textAlign:"right"}}>
+        <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:17,color:a.isMe?C.red:C.text,lineHeight:1}}>{a.xp.toLocaleString()}</div>
+        <div style={{color:C.grayLight,fontSize:8}}>XP</div>
+      </div>
+    </div>;})}
+    <div style={{textAlign:"center",marginTop:6,color:C.grayLight,fontSize:10,padding:"8px",background:C.faint,borderRadius:6}}>Baseado em XP acumulado · Atualizado semanalmente</div>
+  </div>;
+}
+
 /* ─── WORKOUT MODAL (BUG FIXED) ──────────────────────────── */
 function WorkoutModal({session,week,onClose,onComplete}){
   var[tab,sTab]=useState("main");
@@ -820,6 +994,12 @@ function DashboardTab({activity,user,onGoToPlan}){
         <div style={{color:C.grayLight,fontSize:8,marginTop:2}}>{k.sub}</div>
       </div>;})}
     </div>
+
+    {/* ── DESAFIOS DA SEMANA ── */}
+    <ChallengesCard activity={activity}/>
+
+    {/* ── CONQUISTAS (PREVIEW) ── */}
+    <BadgesView activity={activity} compact/>
 
     {/* ── PRÓXIMO TREINO ── */}
     {cw&&(function(){var next=cw.sessions.find(function(s){return!s.completed;});if(!next)return null;
@@ -1353,6 +1533,7 @@ function ProfileTab({user,activity,onLogout,onSaveProfile,onChangeSport}){
   var xp=activity?activity.xp||0:0;
   var[section,setSection]=useState("main");
   var[editing,setEditing]=useState(false);
+  var[measHistory,setMeasHistory]=useState([]);
   var[d,sD]=useState({name:user?user.name:"",age:activity?activity.age||"":"",weight:activity?activity.weight||"":"",height:activity?activity.height||"":""});
   var[billing,sBilling]=useState("mensal");
   function set(k,v){sD(function(p){var n=Object.assign({},p);n[k]=v;return n;});}
@@ -1400,6 +1581,56 @@ function ProfileTab({user,activity,onLogout,onSaveProfile,onChangeSport}){
     </div>
   </div>;
 
+  /* ─── Conquistas ─── */
+  if(section==="conquistas")return<div className="au" style={{display:"flex",flexDirection:"column",gap:0,padding:"0 0 24px"}}>
+    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
+      <button onClick={function(){setSection("main");}} style={{width:30,height:30,borderRadius:5,background:C.faint,border:"1px solid "+C.border,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Icon name="back" size={14} color={C.gray}/></button>
+      <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,color:C.text,letterSpacing:.5}}>CONQUISTAS</div>
+      <span style={{background:C.red+"14",color:C.red,fontSize:10,fontWeight:700,padding:"2px 9px",borderRadius:4,marginLeft:"auto"}}>{computeBadges(activity).filter(function(b){return b.earned;}).length+"/"+BADGES.length}</span>
+    </div>
+    <BadgesView activity={activity}/>
+  </div>;
+
+  /* ─── Medidas corporais ─── */
+  if(section==="medidas")return<div className="au" style={{display:"flex",flexDirection:"column",gap:0,padding:"0 0 24px"}}>
+    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
+      <button onClick={function(){setSection("main");}} style={{width:30,height:30,borderRadius:5,background:C.faint,border:"1px solid "+C.border,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Icon name="back" size={14} color={C.gray}/></button>
+      <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,color:C.text,letterSpacing:.5}}>MEDIDAS</div>
+    </div>
+    <BodyView activity={activity}/>
+    {measHistory.length>0&&<div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"14px 16px",marginTop:10}}>
+      <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",marginBottom:10}}>HISTÓRICO</div>
+      <div style={{display:"flex",flexDirection:"column",gap:6}}>
+        {measHistory.slice(0,5).map(function(m,i){return<div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 10px",background:C.faint,borderRadius:6}}>
+          <span style={{color:C.grayLight,fontSize:10}}>{m.date}</span>
+          <div style={{display:"flex",gap:12}}>
+            {m.peso&&<span style={{fontSize:11,fontWeight:700,color:C.text}}>{m.peso}<span style={{color:C.grayLight,fontWeight:400}}> kg</span></span>}
+            {m.cintura&&<span style={{fontSize:11,fontWeight:700,color:C.blue}}>{m.cintura}<span style={{color:C.grayLight,fontWeight:400}}> cm cintura</span></span>}
+          </div>
+        </div>;})}
+      </div>
+    </div>}
+  </div>;
+
+  /* ─── Ranking ─── */
+  if(section==="ranking")return<div className="au" style={{display:"flex",flexDirection:"column",gap:0,padding:"0 0 24px"}}>
+    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
+      <button onClick={function(){setSection("main");}} style={{width:30,height:30,borderRadius:5,background:C.faint,border:"1px solid "+C.border,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Icon name="back" size={14} color={C.gray}/></button>
+      <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,color:C.text,letterSpacing:.5}}>RANKING</div>
+    </div>
+    <div style={{background:C.dark,borderRadius:8,padding:"14px 16px",marginBottom:12}}>
+      <div style={{color:"#ffffff44",fontSize:9,fontWeight:700,letterSpacing:2,marginBottom:4}}>SEU NÍVEL</div>
+      <div style={{display:"flex",alignItems:"center",gap:12}}>
+        <div style={{width:44,height:44,borderRadius:8,background:getLevel(xp).color,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Bebas Neue',sans-serif",fontSize:22,color:"#fff"}}>{getLevel(xp).rank}</div>
+        <div>
+          <div style={{color:"#fff",fontWeight:700,fontSize:14}}>{getLevel(xp).label}</div>
+          <div style={{color:"#ffffff55",fontSize:10}}>{xp.toLocaleString()+" XP acumulados"}</div>
+        </div>
+      </div>
+    </div>
+    <LeaderboardView user={user} activity={activity}/>
+  </div>;
+
   /* ─── Trocar esporte ─── */
   if(section==="sport")return<div className="au" style={{display:"flex",flexDirection:"column",gap:0,padding:"0 0 24px"}}>
     <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
@@ -1443,9 +1674,16 @@ function ProfileTab({user,activity,onLogout,onSaveProfile,onChangeSport}){
 
     {/* Menu items */}
     <div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,overflow:"hidden",marginBottom:10}}>
-      {[{id:"sport",label:"Trocar esporte",icon:"sport",desc:"Alterar modalidade principal"},{id:"plans",label:"Planos ARES",icon:"star",desc:"Upgrade de assinatura"}].map(function(m,i){return<div key={m.id} onClick={function(){setSection(m.id);}} style={{display:"flex",alignItems:"center",gap:12,padding:"13px 14px",cursor:"pointer",borderBottom:i===0?"1px solid "+C.border:"none",background:C.white,transition:"background .12s"}}>
+      {[
+        {id:"conquistas",label:"Conquistas",icon:"trophy",desc:computeBadges(activity).filter(function(b){return b.earned;}).length+"/"+BADGES.length+" desbloqueadas",badge:computeBadges(activity).filter(function(b){return b.earned;}).length},
+        {id:"medidas",label:"Medidas Corporais",icon:"chart",desc:"Peso, composição e evolução"},
+        {id:"ranking",label:"Ranking",icon:"star",desc:"Sua posição entre atletas"},
+        {id:"sport",label:"Trocar esporte",icon:"sport",desc:"Alterar modalidade principal"},
+        {id:"plans",label:"Planos ARES",icon:"star",desc:"Upgrade de assinatura"},
+      ].map(function(m,i,arr){return<div key={m.id} onClick={function(){setSection(m.id);}} style={{display:"flex",alignItems:"center",gap:12,padding:"13px 14px",cursor:"pointer",borderBottom:i<arr.length-1?"1px solid "+C.border:"none",background:C.white,transition:"background .12s"}}>
         <div style={{width:32,height:32,background:C.faint,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Icon name={m.icon} size={16} color={C.gray}/></div>
         <div style={{flex:1}}><div style={{fontWeight:600,fontSize:13,color:C.text}}>{m.label}</div><div style={{color:C.grayLight,fontSize:10,marginTop:1}}>{m.desc}</div></div>
+        {m.badge>0&&<span style={{background:C.red,color:"#fff",fontSize:9,fontWeight:700,padding:"1px 6px",borderRadius:99,minWidth:18,textAlign:"center"}}>{m.badge}</span>}
         <svg viewBox="0 0 24 24" fill="none" stroke={C.grayLight} strokeWidth="2" strokeLinecap="round" style={{width:14,height:14,flexShrink:0}}><path d="M9 18l6-6-6-6"/></svg>
       </div>;})}
     </div>
@@ -1486,6 +1724,8 @@ function MainApp({user,initialActivity,onSaveSession,onSavePlanProgress,onSaveAc
   var[activities,setActivities]=useState(initialActivity?[initialActivity]:[]);
   var[showOb,sShowOb]=useState(false);
   var[showLU,sShowLU]=useState(null);
+  var[badgeToast,sBadgeToast]=useState(null);
+  var prevBadgesRef=React.useRef(null);
   var activeIdx=0;
   var userPlan=getEffectivePlan(user);
   var ca=activities[activeIdx]||null;
@@ -1497,6 +1737,22 @@ function MainApp({user,initialActivity,onSaveSession,onSavePlanProgress,onSaveAc
       setActivities(function(prev){return prev.map(function(act,i){return i===0?Object.assign({},act,{plan:generatePlan(a)}):act;});});
     }
   },[]);
+
+  /* Badge unlock detection */
+  useEffect(function(){
+    var ca=activities[0]||null;
+    if(!ca)return;
+    var current=computeBadges(ca).filter(function(b){return b.earned;}).map(function(b){return b.id;});
+    var prev=prevBadgesRef.current;
+    if(prev!==null){
+      var newOnes=current.filter(function(id){return prev.indexOf(id)<0;});
+      if(newOnes.length>0){
+        var badge=BADGES.find(function(b){return b.id===newOnes[0];});
+        if(badge){setTimeout(function(){sBadgeToast(badge);setTimeout(function(){sBadgeToast(null);},4000);},600);}
+      }
+    }
+    prevBadgesRef.current=current;
+  },[activities]);
 
   var addSession=useCallback(function(s){
     setActivities(function(prev){
@@ -1559,6 +1815,14 @@ function MainApp({user,initialActivity,onSaveSession,onSavePlanProgress,onSaveAc
         <div style={{color:C.red,fontSize:10,fontWeight:700,letterSpacing:3,marginBottom:6}}>NÍVEL DESBLOQUEADO</div>
         <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:30,color:"#fff",letterSpacing:2,marginBottom:20}}>{showLU.label.toUpperCase()}</div>
         <Btn onClick={function(){sShowLU(null);}} full>CONTINUAR →</Btn>
+      </div>
+    </div>}
+    {badgeToast&&<div className="sld" onClick={function(){sBadgeToast(null);}} style={{position:"fixed",top:"calc(60px + "+SAT+")",left:"50%",transform:"translateX(-50%)",zIndex:250,background:C.dark,border:"1px solid "+badgeToast.color+"44",borderRadius:10,padding:"12px 18px",display:"flex",alignItems:"center",gap:12,boxShadow:"0 8px 32px rgba(0,0,0,.4)",cursor:"pointer",minWidth:260,maxWidth:320}}>
+      <div className="pls" style={{width:44,height:44,borderRadius:9,background:badgeToast.color+"20",border:"1px solid "+badgeToast.color+"44",display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,flexShrink:0}}>{badgeToast.icon}</div>
+      <div>
+        <div style={{color:badgeToast.color,fontSize:9,fontWeight:700,letterSpacing:2,marginBottom:2}}>CONQUISTA DESBLOQUEADA</div>
+        <div style={{color:"#fff",fontWeight:700,fontSize:14}}>{badgeToast.name}</div>
+        <div style={{color:"#ffffff66",fontSize:11}}>{badgeToast.desc}</div>
       </div>
     </div>}
     <div style={{background:C.white,borderBottom:"1px solid "+C.border,padding:"0 16px",paddingTop:SAT,display:"flex",alignItems:"center",gap:10,position:"sticky",top:0,zIndex:100,boxShadow:sh.xs,minHeight:"calc(48px + "+SAT+")"}}>
