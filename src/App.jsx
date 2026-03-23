@@ -508,6 +508,109 @@ function SL({children,mb=12}){return<div style={{display:"flex",alignItems:"cent
 function AresLogo({size=32,mono=false}){return<div style={{display:"flex",alignItems:"center",gap:2}}><span style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:size,color:mono?"#fff":C.red,letterSpacing:3,lineHeight:1}}>ARES</span><span style={{fontSize:size*.25,color:mono?"#ffffff55":C.grayLight,fontWeight:600,letterSpacing:2,textTransform:"uppercase",alignSelf:"flex-end",marginBottom:size*.08}}>PERFORMANCE</span></div>;}
 function Spinner(){return<div style={{width:20,height:20,border:"2px solid "+C.border,borderTopColor:C.red,borderRadius:"50%",animation:"spin .7s linear infinite"}}/>;}
 
+/* ─── SHARE CARD ─────────────────────────────────────────── */
+async function generateShareCard(opts){
+  var W=1080,H=1080;
+  var canvas=document.createElement("canvas");
+  canvas.width=W;canvas.height=H;
+  var cx=canvas.getContext("2d");
+  // BG
+  var bg=cx.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0,"#0A0A0A");bg.addColorStop(1,"#181818");
+  cx.fillStyle=bg;cx.fillRect(0,0,W,H);
+  // Glow circle
+  var glow=cx.createRadialGradient(980,140,0,980,140,400);
+  glow.addColorStop(0,"rgba(200,0,30,.22)");glow.addColorStop(1,"rgba(200,0,30,0)");
+  cx.fillStyle=glow;cx.fillRect(0,0,W,H);
+  // Accent bar
+  cx.fillStyle="#C8001E";cx.fillRect(0,0,W,10);
+  // ARES
+  cx.font="bold 148px 'Bebas Neue',Arial Black,Impact,sans-serif";
+  cx.fillStyle="#FFFFFF";cx.fillText("ARES",80,200);
+  cx.font="bold 32px Arial,sans-serif";
+  cx.fillStyle="#C8001E";cx.fillText("PERFORMANCE",82,245);
+  // Sport
+  cx.font="52px sans-serif";cx.fillText(opts.sportIcon||"⚡",80,352);
+  cx.font="bold 32px Arial,sans-serif";cx.fillStyle="rgba(255,255,255,.45)";
+  cx.fillText((opts.sportName||"").toUpperCase(),148,348);
+  // Name
+  var nm=(opts.name||"ATLETA").toUpperCase().slice(0,20);
+  cx.font="bold 76px Arial,sans-serif";cx.fillStyle="#FFFFFF";
+  cx.fillText(nm,80,455);
+  // Date
+  cx.font="26px Arial,sans-serif";cx.fillStyle="rgba(255,255,255,.32)";
+  cx.fillText(opts.date||new Date().toLocaleDateString("pt-BR"),80,505);
+  // Divider
+  cx.strokeStyle="rgba(255,255,255,.1)";cx.lineWidth=1;
+  cx.beginPath();cx.moveTo(80,548);cx.lineTo(1000,548);cx.stroke();
+  // Stats
+  var stats=[
+    {v:opts.duration?(opts.duration+"min"):"--",l:"DURAÇÃO",col:"#FFFFFF"},
+    {v:opts.rpe?(opts.rpe+"/10"):"--",l:"INTENSIDADE",col:"#C8001E"},
+    {v:opts.xp?("+"+opts.xp+" XP"):"--",l:"EXPERIÊNCIA",col:"#18A84A"},
+  ];
+  stats.forEach(function(s,i){
+    var x=80+i*320;
+    cx.font="bold 90px 'Bebas Neue',Arial Black,Impact,sans-serif";
+    cx.fillStyle=s.col;cx.fillText(s.v,x,680);
+    cx.font="bold 21px Arial,sans-serif";cx.fillStyle="rgba(255,255,255,.32)";
+    cx.fillText(s.l,x,716);
+  });
+  // Exercises
+  var exList=opts.exercises||[];
+  if(exList.length>0){
+    cx.font="bold 24px Arial,sans-serif";cx.fillStyle="rgba(255,255,255,.38)";
+    cx.fillText("EXERCÍCIOS",80,790);
+    exList.slice(0,4).forEach(function(ex,i){
+      cx.font="26px Arial,sans-serif";cx.fillStyle="rgba(255,255,255,.62)";
+      var label=typeof ex==="string"?ex:(ex.name||ex.n||"");
+      cx.fillText("· "+label.slice(0,30),80+(i>=2?450:0),834+(i%2)*46);
+    });
+  }
+  // Watermark
+  cx.font="22px Arial,sans-serif";cx.fillStyle="rgba(255,255,255,.16)";
+  cx.fillText("aresperformance.app",80,1040);
+  // Corner mark
+  cx.fillStyle="#C8001E";cx.fillRect(1020,1020,60,60);
+  cx.fillStyle="#0A0A0A";cx.fillRect(1028,1028,44,44);
+  cx.fillStyle="#C8001E";cx.fillRect(1036,1036,28,28);
+  return new Promise(function(res){canvas.toBlob(function(b){res(b);},"image/png");});
+}
+function ShareModal({opts,onClose}){
+  var[imgUrl,sImgUrl]=useState(null);
+  var[sharing,sSharing]=useState(false);
+  useEffect(function(){
+    generateShareCard(opts).then(function(blob){sImgUrl(URL.createObjectURL(blob));});
+  },[]);
+  async function doShare(){
+    sSharing(true);
+    try{
+      var blob=await generateShareCard(opts);
+      var file=new File([blob],"ares-treino.png",{type:"image/png"});
+      if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+        await navigator.share({title:"Treino · ARES Performance",text:"Mais um treino registrado 💪 #AresPerformance",files:[file]});
+      }else{
+        var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="ares-treino.png";a.click();
+      }
+    }catch(e){console.error(e);}
+    sSharing(false);
+  }
+  return<div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.88)",display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
+    <div className="pop" style={{background:C.white,borderRadius:"16px 16px 0 0",padding:"20px 20px calc(20px + "+SAB+")",maxWidth:540,width:"100%"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+        <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,color:C.text,letterSpacing:.5}}>COMPARTILHAR TREINO</div>
+        <button onClick={onClose} style={{background:"none",border:"none",fontSize:18,cursor:"pointer",color:C.gray,lineHeight:1,padding:4}}>✕</button>
+      </div>
+      {!imgUrl&&<div style={{height:180,display:"flex",alignItems:"center",justifyContent:"center",background:C.faint,borderRadius:8,marginBottom:14}}><Spinner/></div>}
+      {imgUrl&&<img src={imgUrl} alt="Share card" style={{width:"100%",borderRadius:8,marginBottom:14,boxShadow:sh.md}}/>}
+      <div style={{display:"flex",flexDirection:"column",gap:8}}>
+        <Btn onClick={doShare} full disabled={!imgUrl||sharing}>{sharing?"Compartilhando...":"📤  Instagram / Stories / WhatsApp"}</Btn>
+        {imgUrl&&<Btn v="ghost" full onClick={function(){var a=document.createElement("a");a.href=imgUrl;a.download="ares-treino.png";a.click();}}>⬇  Salvar imagem</Btn>}
+      </div>
+    </div>
+  </div>;
+}
+
 /* ─── MINI CHARTS ────────────────────────────────────────── */
 function Sparkline({data,color=C.red,h=40,showDots=false}){
   if(!data||data.length<2)return<div style={{height:h,background:C.faint,borderRadius:8}}/>;
@@ -1335,19 +1438,26 @@ function RegisterTab({onSave,activity,onXPGain}){
   var[exs,sExs]=useState([{name:"",sets:"",reps:"",kg:""}]);
   var[freeText,sFreeText]=useState("");
   var[saved,sSaved]=useState(false);
+  var[savedOpts,sSavedOpts]=useState(null);
+  var[showShare,sShowShare]=useState(false);
   function parseFreeText(txt){return txt.split("\n").filter(function(l){return l.trim();}).slice(0,12).map(function(l){return{name:l.trim(),sets:"",reps:"",kg:""};});}
   function save(){
     var exercises=mode==="free"?parseFreeText(freeText):exs;
-    sSaved(true);
+    var sOpts={name:activity?activity.name:(sp?sp.name:"Atleta"),sportIcon:sp?sp.icon:"⚡",sportName:sp?sp.name:"Esporte",date:new Date().toLocaleDateString("pt-BR"),duration:+dur||60,rpe,xp:XP_SESSION,exercises};
+    sSaved(true);sSavedOpts(sOpts);
     onSave({id:Date.now(),date:new Date().toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"}),type,duration:+dur||60,rpe,notes,exercises,source:mode});
     if(onXPGain)onXPGain(XP_SESSION);
-    setTimeout(function(){sSaved(false);sExs([{name:"",sets:"",reps:"",kg:""}]);sNotes("");sDur("");sRpe(7);sFreeText("");},2000);
   }
+  function resetForm(){sSaved(false);sSavedOpts(null);sExs([{name:"",sets:"",reps:"",kg:""}]);sNotes("");sDur("");sRpe(7);sFreeText("");}
   if(saved)return<div className="au" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:360,gap:14,padding:32}}>
+    {showShare&&savedOpts&&<ShareModal opts={savedOpts} onClose={function(){sShowShare(false);}}/>}
     <div style={{width:56,height:56,background:C.green+"14",border:"1px solid "+C.green+"30",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center"}}><Icon name="check" size={26} color={C.green}/></div>
     <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,color:C.text,letterSpacing:.5}}>SESSÃO REGISTRADA</div>
     <div style={{color:C.red,fontWeight:700,fontSize:13}}>{"+"+XP_SESSION+" XP"}</div>
-    <Btn onClick={function(){sSaved(false);}} v="secondary" sm>Nova sessão</Btn>
+    <div style={{display:"flex",flexDirection:"column",gap:8,width:"100%",maxWidth:260}}>
+      <Btn onClick={function(){sShowShare(true);}} full>📤  Compartilhar no IG</Btn>
+      <Btn onClick={resetForm} v="ghost" full sm>Nova sessão</Btn>
+    </div>
   </div>;
 
   var volTotal=exs.reduce(function(a,e){return a+(parseInt(e.sets||0)*parseInt(e.reps||0)*parseInt(e.kg||0));},0);
@@ -1435,7 +1545,7 @@ function RegisterTab({onSave,activity,onXPGain}){
 }
 
 function AITab({activity,user}){
-  var isPro=["pro","coach","club","admin"].includes(user?user.plan:"");
+  var isPro=["pro","coach","club","admin"].includes(getEffectivePlan(user));
   var[credits,sCredits]=useState(isPro?999:2);
   var[reports,sReports]=useState([]);
   var[ld,sLd]=useState(false);
@@ -1753,7 +1863,10 @@ function ProfileTab({user,activity,onLogout,onSaveProfile,onChangeSport}){
 /* ─── MAIN APP ───────────────────────────────────────────── */
 function MainApp({user,initialActivity,onSaveSession,onSavePlanProgress,onSaveActivity,onSaveProfile,onLogout}){
   usePWA();
-  var isCoach=getEffectivePlan(user)==="coach"||getEffectivePlan(user)==="admin";
+  var isAdmin=getEffectivePlan(user)==="admin";
+  var hasCoachAccess=getEffectivePlan(user)==="coach"||isAdmin;
+  var[coachMode,sCoachMode]=useState(false);
+  var isCoach=hasCoachAccess&&coachMode;
   var[selAthlete,sSelAthlete]=useState(null);
   var[tab,sTab]=useState("home");
   var[activities,setActivities]=useState(initialActivity?[initialActivity]:[]);
@@ -1850,8 +1963,9 @@ function MainApp({user,initialActivity,onSaveSession,onSavePlanProgress,onSaveAc
     </div>}
     <div style={{background:C.white,borderBottom:"1px solid "+C.border,padding:"0 16px",paddingTop:SAT,display:"flex",alignItems:"center",gap:10,position:"sticky",top:0,zIndex:100,boxShadow:sh.xs,minHeight:"calc(48px + "+SAT+")"}}>
       <div style={{flex:1}}><AresLogo size={28}/></div>
-      {sp&&<div style={{padding:"4px 10px",background:C.faint,border:"1px solid "+C.border,borderRadius:5,fontSize:10,fontWeight:600,color:C.text}}>{sp.icon+" "+sp.name}</div>}
-      <div onClick={function(){sTab("me");}} style={{width:30,height:30,background:C.red,borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontFamily:"'Bebas Neue',sans-serif",fontSize:12,cursor:"pointer",flexShrink:0}}>{(user?user.name:"A").charAt(0).toUpperCase()}</div>
+      {sp&&!isCoach&&<div style={{padding:"4px 10px",background:C.faint,border:"1px solid "+C.border,borderRadius:5,fontSize:10,fontWeight:600,color:C.text}}>{sp.icon+" "+sp.name}</div>}
+      {hasCoachAccess&&<button onClick={function(){sCoachMode(!coachMode);sTab("home");}} style={{padding:"4px 10px",background:coachMode?"#0066CC":"#0066CC14",border:"1px solid #0066CC44",borderRadius:5,fontSize:9,fontWeight:700,color:coachMode?"#fff":"#0066CC",cursor:"pointer",flexShrink:0,letterSpacing:.5}}>{coachMode?"← ATLETA":"COACH"}</button>}
+      <div onClick={function(){sTab("me");}} style={{width:30,height:30,background:isAdmin?"linear-gradient(135deg,"+C.red+",#8A0012)":C.red,borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontFamily:"'Bebas Neue',sans-serif",fontSize:12,cursor:"pointer",flexShrink:0,boxShadow:isAdmin?sh.red:"none"}}>{(user?user.name:"A").charAt(0).toUpperCase()}</div>
     </div>
     <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:100}}>
       <div style={{background:C.white,borderTop:"1px solid "+C.border,display:"flex",alignItems:"flex-end",justifyContent:"space-around",paddingBottom:SAB,minHeight:56}}>
