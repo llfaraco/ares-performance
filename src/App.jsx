@@ -2182,69 +2182,58 @@ function MainApp({user,initialActivity,onSaveSession,onSavePlanProgress,onSaveAc
   },[]);
 
   var addSession=useCallback(function(s){
+    var withTs=Object.assign({},s,{ts:s.ts||Date.now()});
     setActivities(function(prev){
-      var withTs=Object.assign({},s,{ts:s.ts||Date.now()});
-      var updated=prev.map(function(a,i){return i===activeIdx?Object.assign({},a,{sessions:[withTs].concat(a.sessions||[])}):a;});
-      if(onSaveSession)onSaveSession(withTs,updated[activeIdx]);
-      return updated;
+      return prev.map(function(a,i){return i===activeIdx?Object.assign({},a,{sessions:[withTs].concat(a.sessions||[])}):a;});
     });
-  },[activeIdx]);
+    if(onSaveSession){
+      var cur=activities[activeIdx];
+      if(cur)onSaveSession(withTs,Object.assign({},cur,{sessions:[withTs].concat(cur.sessions||[])}));
+    }
+  },[activeIdx,activities,onSaveSession]);
 
   var markComplete=useCallback(function(wn,sid,planSession){
-    setActivities(function(prev){
-      var updated=prev.map(function(a,i){
-        if(i!==activeIdx||!a.plan)return a;
-        // 1. Marca sessão como concluída no plano
-        var weeks=a.plan.weeks.map(function(w){return w.week!==wn?w:Object.assign({},w,{sessions:w.sessions.map(function(s){return s.id===sid?Object.assign({},s,{completed:true}):s;})});});
-        // 2. Adiciona ao histórico de sessões (aparece no dashboard)
-        var newSess={
-          id:Date.now(),ts:Date.now(),
-          date:new Date().toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"}),
-          type:planSession?planSession.type:"Treino",
-          duration:planSession?planSession.duration||60:60,
-          rpe:planSession?planSession.rpe||null:null,
-          exercises:planSession?(planSession.main||planSession.exercises||[]):[],
-          source:"plan",
-        };
-        var sessions=[newSess].concat(a.sessions||[]);
-        var na=Object.assign({},a,{sessions,plan:Object.assign({},a.plan,{weeks,currentWeek:Math.min(wn+1,12)})});
-        if(onSaveSession)onSaveSession(newSess,na);
-        return na;
-      });
-      if(onSavePlanProgress)onSavePlanProgress(updated[activeIdx]);
-      return updated;
-    });
-  },[activeIdx]);
+    var a=activities[activeIdx];
+    if(!a||!a.plan)return;
+    var weeks=a.plan.weeks.map(function(w){return w.week!==wn?w:Object.assign({},w,{sessions:w.sessions.map(function(s){return s.id===sid?Object.assign({},s,{completed:true}):s;})});});
+    var newSess={
+      id:Date.now(),ts:Date.now(),
+      date:new Date().toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"}),
+      type:planSession?planSession.type:"Treino",
+      duration:planSession?planSession.duration||60:60,
+      rpe:planSession?planSession.rpe||null:null,
+      exercises:planSession?(planSession.main||planSession.exercises||[]):[],
+      source:"plan",
+    };
+    var sessions=[newSess].concat(a.sessions||[]);
+    var na=Object.assign({},a,{sessions,plan:Object.assign({},a.plan,{weeks,currentWeek:Math.min(wn+1,12)})});
+    setActivities(function(prev){return prev.map(function(x,i){return i===activeIdx?na:x;});});
+    if(onSaveSession)onSaveSession(newSess,na);
+    if(onSavePlanProgress)onSavePlanProgress(na);
+  },[activeIdx,activities,onSaveSession,onSavePlanProgress]);
 
   var gainXP=useCallback(function(amt){
-    setActivities(function(prev){
-      var updated=prev.map(function(a,i){
-        if(i!==activeIdx)return a;
-        var nxp=(a.xp||0)+amt;
-        var oL=getLevel(a.xp||0),nL=getLevel(nxp);
-        if(nL.id!==oL.id)setTimeout(function(){sShowLU(nL);},400);
-        return Object.assign({},a,{xp:nxp});
-      });
-      if(onSavePlanProgress)onSavePlanProgress(updated[activeIdx]);
-      return updated;
-    });
-  },[activeIdx]);
+    var a=activities[activeIdx];if(!a)return;
+    var nxp=(a.xp||0)+amt;
+    var oL=getLevel(a.xp||0),nL=getLevel(nxp);
+    if(nL.id!==oL.id)setTimeout(function(){sShowLU(nL);},400);
+    var na=Object.assign({},a,{xp:nxp});
+    setActivities(function(prev){return prev.map(function(x,i){return i===activeIdx?na:x;});});
+    if(onSavePlanProgress)onSavePlanProgress(na);
+  },[activeIdx,activities,onSavePlanProgress]);
 
   var saveBodyLog=useCallback(function(entry,goalVal){
-    setActivities(function(prev){
-      var updated=prev.map(function(a,i){
-        if(i!==activeIdx)return a;
-        var logs=(a.bodyLogs||[]).concat([entry]);
-        var na=Object.assign({},a,{bodyLogs:logs,weightGoal:goalVal?parseFloat(goalVal):a.weightGoal});
-        if(onSaveActivity)onSaveActivity(na);
-        return na;
-      });
-      return updated;
-    });
-  },[activeIdx]);
+    var a=activities[activeIdx];if(!a)return;
+    var na=Object.assign({},a,{bodyLogs:(a.bodyLogs||[]).concat([entry]),weightGoal:goalVal?parseFloat(goalVal):a.weightGoal});
+    setActivities(function(prev){return prev.map(function(x,i){return i===activeIdx?na:x;});});
+    if(onSaveActivity)onSaveActivity(na);
+  },[activeIdx,activities,onSaveActivity]);
 
   function changeSport(newSport){
-    setActivities(function(prev){return prev.map(function(a,i){if(i!==activeIdx)return a;var na=Object.assign({},a,{sport:newSport,plan:generatePlan(Object.assign({},a,{sport:newSport}))});if(onSaveActivity)onSaveActivity(na);return na;});});
+    var a=activities[activeIdx];if(!a)return;
+    var na=Object.assign({},a,{sport:newSport,plan:generatePlan(Object.assign({},a,{sport:newSport}))});
+    setActivities(function(prev){return prev.map(function(x,i){return i===activeIdx?na:x;});});
+    if(onSaveActivity)onSaveActivity(na);
   }
   function addActivity(data){
     var full=Object.assign({id:Date.now()},data,{sessions:[],xp:0,plan:generatePlan(data)});
@@ -2538,7 +2527,8 @@ function AppRoot(){
   if(show==="loading")return<div style={{minHeight:"100vh",background:C.dark,display:"flex",alignItems:"center",justifyContent:"center",flexDirection:"column",gap:12}}><style>{CSS}</style><AresLogo size={48} mono/><Spinner/></div>;
   if(show==="login")return<div><style>{CSS}</style><LoginScreen/></div>;
   if(show==="onboard")return<div><style>{CSS}</style><OnboardScreen user={user} onComplete={async function(d){var full=Object.assign({id:Date.now()},d,{sessions:[],xp:0,plan:generatePlan(d)});await aresData.saveActivity(full);}}/></div>;
-  return<div><style>{CSS}</style><MainApp user={user} initialActivity={aresData.data.activity} onSaveSession={aresData.saveSession} onSavePlanProgress={aresData.savePlanProgress} onSaveActivity={aresData.saveActivity} onSaveProfile={aresData.saveProfile} onLogout={async function(){await supabase.auth.signOut();sUser(null);}}/></div>;
+  var mergedActivity=(function(){var d=aresData.data;if(!d||!d.activity)return null;var dbSessions=d.sessions&&d.sessions.length>0?d.sessions:(d.activity.sessions||[]);return Object.assign({},d.activity,{sessions:dbSessions});})();
+  return<div><style>{CSS}</style><MainApp user={user} initialActivity={mergedActivity} onSaveSession={aresData.saveSession} onSavePlanProgress={aresData.savePlanProgress} onSaveActivity={aresData.saveActivity} onSaveProfile={aresData.saveProfile} onLogout={async function(){await supabase.auth.signOut();sUser(null);}}/></div>;
 }
 
 export default AppRoot;
