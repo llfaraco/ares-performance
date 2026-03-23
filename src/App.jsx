@@ -564,17 +564,17 @@ function XPBar({xp}){
         <div style={{width:28,height:28,borderRadius:5,background:cur.color,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:900,color:"#fff"}}>{cur.rank}</div>
         <div>
           <div style={{color:"#ffffffcc",fontWeight:700,fontSize:13}}>{cur.label.toUpperCase()}</div>
-          {nxt&&<div style={{color:"#ffffff44",fontSize:9}}>{"→ "+nxt.label}</div>}
+          {nxt&&<div style={{color:"#ffffffaa",fontSize:9}}>{"→ "+nxt.label}</div>}
         </div>
       </div>
       <div style={{color:C.red,fontSize:13,fontWeight:700}}>{xp+" XP"}</div>
     </div>
-    <div style={{background:"#ffffff14",borderRadius:99,height:4,overflow:"hidden"}}>
+    <div style={{background:"#ffffff25",borderRadius:99,height:4,overflow:"hidden"}}>
       <div style={{height:"100%",background:"linear-gradient(90deg,"+C.redDk+","+C.red+")",borderRadius:99,width:pct+"%",transition:"width .8s"}}/>
     </div>
     <div style={{display:"flex",justifyContent:"space-between",marginTop:3}}>
-      <span style={{color:"#ffffff33",fontSize:9}}>{(xp-base)+"/"+(nxt?next-base:"MAX")}</span>
-      <span style={{color:"#ffffff55",fontSize:9}}>{pct+"%"}</span>
+      <span style={{color:"#ffffff99",fontSize:9}}>{(xp-base)+"/"+(nxt?next-base:"MAX")}</span>
+      <span style={{color:"#ffffffaa",fontSize:9}}>{pct+"%"}</span>
     </div>
   </div>;
 }
@@ -677,9 +677,9 @@ function LoginScreen(){
     <div style={{position:"absolute",top:"15%",left:"50%",transform:"translateX(-50%)",width:400,height:400,background:"radial-gradient(ellipse,"+C.red+"16,transparent 65%)",pointerEvents:"none"}}/>
     <div style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"60px 24px 40px"}}>
       <AresLogo size={52} mono/>
-      <div style={{color:"#ffffff44",fontSize:13,textAlign:"center",maxWidth:260,lineHeight:1.7,marginTop:20}}>Inteligência atlética para qualquer esporte</div>
+      <div style={{color:"#ffffffcc",fontSize:13,textAlign:"center",maxWidth:260,lineHeight:1.7,marginTop:20}}>Inteligência atlética para qualquer esporte</div>
       <div style={{display:"flex",gap:28,marginTop:28}}>
-        {[["50K+","Atletas"],["21","Esportes"],["IA","Engine"]].map(function(a){return<div key={a[1]} style={{textAlign:"center"}}><div style={{color:"#fff",fontFamily:"'Bebas Neue',sans-serif",fontSize:22,letterSpacing:1}}>{a[0]}</div><div style={{color:"#ffffff33",fontSize:9,letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{a[1]}</div></div>;})}
+        {[["50K+","Atletas"],["21","Esportes"],["IA","Engine"]].map(function(a){return<div key={a[1]} style={{textAlign:"center"}}><div style={{color:"#fff",fontFamily:"'Bebas Neue',sans-serif",fontSize:22,letterSpacing:1}}>{a[0]}</div><div style={{color:"#ffffffaa",fontSize:9,letterSpacing:2,textTransform:"uppercase",marginTop:2}}>{a[1]}</div></div>;})}
       </div>
     </div>
     <div style={{background:C.white,borderRadius:"10px 10px 0 0",padding:"28px 24px calc(32px + "+SAB+")"}}>
@@ -754,8 +754,8 @@ function OnboardScreen({user,onComplete}){
       {step===0&&<div style={{display:"flex",flexDirection:"column",gap:14}}>
         <div style={{background:C.dark,borderRadius:8,padding:"20px",textAlign:"center"}}>
           <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:42,color:C.red,letterSpacing:3,lineHeight:1}}>ARES</div>
-          <div style={{color:"#ffffff55",fontSize:10,letterSpacing:3,marginTop:2}}>PERFORMANCE</div>
-          <div style={{color:"#ffffffbb",fontSize:13,marginTop:14,lineHeight:1.7}}>Seu programa esportivo personalizado com periodização científica e análise de IA.</div>
+          <div style={{color:"#ffffffaa",fontSize:10,letterSpacing:3,marginTop:2}}>PERFORMANCE</div>
+          <div style={{color:"#ffffffdd",fontSize:13,marginTop:14,lineHeight:1.7}}>Seu programa esportivo personalizado com periodização científica e análise de IA.</div>
         </div>
         {[
           {icon:"⚡",title:"Plano periodizado 12 semanas",desc:"Baseado no seu esporte, posição e disponibilidade"},
@@ -978,22 +978,22 @@ function DashboardTab({activity,user,onGoToPlan,onSaveBodyLog}){
     <div style={{background:C.dark,padding:"20px 0 16px",marginBottom:16,marginLeft:-14,marginRight:-14,paddingLeft:14,paddingRight:14}}>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
         <div>
-          <div style={{color:"#ffffff33",fontSize:9,letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>{new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"})}</div>
+          <div style={{color:"#ffffffaa",fontSize:9,letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>{new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"})}</div>
           <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:28,color:"#fff",letterSpacing:2,lineHeight:1}}>{(sp?sp.name:"ESPORTE").toUpperCase()}</div>
-          <div style={{color:"#ffffff44",fontSize:11,marginTop:3}}>{(activity.position||"")+" · S"+(plan?plan.currentWeek:1)+"/12 · "+(cw?cw.phase:"")}</div>
+          <div style={{color:"#ffffffbb",fontSize:11,marginTop:3}}>{(activity.position||"")+" · S"+(plan?plan.currentWeek:1)+"/12 · "+(cw?cw.phase:"")}</div>
         </div>
         <div style={{textAlign:"right"}}>
           <div style={{color:C.red,fontFamily:"'Bebas Neue',sans-serif",fontSize:52,lineHeight:1}}>{perfScore}</div>
-          <div style={{color:"#ffffff33",fontSize:8,letterSpacing:2}}>PERF SCORE</div>
+          <div style={{color:"#ffffffaa",fontSize:8,letterSpacing:2}}>PERF SCORE</div>
         </div>
       </div>
       <div style={{display:"flex",gap:1.5,marginTop:14}}>
-        {(plan?plan.weeks:[]).map(function(w){var done=w.sessions.filter(function(s){return s.completed;}).length===w.sessions.length&&w.sessions.length>0,isCur=w.week===(plan?plan.currentWeek:1);return<div key={w.week} style={{flex:1,height:3,background:done?C.red:isCur?"#ffffff66":"#ffffff18",transition:"background .3s"}}/>;})
+        {(plan?plan.weeks:[]).map(function(w){var done=w.sessions.filter(function(s){return s.completed;}).length===w.sessions.length&&w.sessions.length>0,isCur=w.week===(plan?plan.currentWeek:1);return<div key={w.week} style={{flex:1,height:3,background:done?C.red:isCur?"#ffffff66":"#ffffff33",transition:"background .3s"}}/>;})
         }
       </div>
       <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}>
-        <span style={{color:"#ffffff22",fontSize:8}}>Ciclo {cyclePct}%</span>
-        <span style={{color:"#ffffff44",fontSize:8}}>S{plan?plan.currentWeek:1}/12</span>
+        <span style={{color:"#ffffff88",fontSize:8}}>Ciclo {cyclePct}%</span>
+        <span style={{color:"#ffffff99",fontSize:8}}>S{plan?plan.currentWeek:1}/12</span>
       </div>
     </div>
 
@@ -1232,7 +1232,7 @@ function PlanTab({activity,onMarkComplete,onXPGain}){
 
     {/* Metodologia */}
     <div style={{background:C.dark,borderRadius:8,padding:"14px 16px"}}>
-      <div style={{color:"#ffffff33",fontSize:8,fontWeight:700,letterSpacing:2,marginBottom:5}}>METODOLOGIA DO PROGRAMA</div>
+      <div style={{color:"#ffffffaa",fontSize:8,fontWeight:700,letterSpacing:2,marginBottom:5}}>METODOLOGIA DO PROGRAMA</div>
       <div style={{color:"#ffffffaa",fontSize:12,lineHeight:1.7}}>{plan.coachNote}</div>
     </div>
 
@@ -1584,20 +1584,20 @@ function AITab({activity,user}){
         <div style={{width:40,height:40,background:C.red,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Icon name="bolt" size={20} color="#fff"/></div>
         <div style={{flex:1}}>
           <div style={{color:"#fff",fontWeight:700,fontSize:13}}>ARES INTELLIGENCE ENGINE</div>
-          <div style={{color:"#ffffff55",fontSize:10,marginTop:1}}>Claude AI · Análise real baseada nos seus dados</div>
+          <div style={{color:"#ffffffbb",fontSize:10,marginTop:1}}>Claude AI · Análise real baseada nos seus dados</div>
         </div>
         {!ld&&<span style={{background:C.green+"20",color:C.green,fontSize:8,fontWeight:700,padding:"2px 6px",borderRadius:3}}>ONLINE</span>}
       </div>
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginBottom:12}}>
-        {[{l:"SESSÕES",v:totalSess>0?totalSess:"—"},{l:"RPE MED.",v:avgRpe>0?avgRpe:"—"},{l:"SEMANA",v:(plan?plan.currentWeek:1)+"/12"}].map(function(k){return<div key={k.l} style={{background:"#ffffff08",borderRadius:5,padding:"8px 6px",textAlign:"center"}}>
-          <div style={{color:"#ffffff33",fontSize:7,fontWeight:700,letterSpacing:.8,marginBottom:3}}>{k.l}</div>
+        {[{l:"SESSÕES",v:totalSess>0?totalSess:"—"},{l:"RPE MED.",v:avgRpe>0?avgRpe:"—"},{l:"SEMANA",v:(plan?plan.currentWeek:1)+"/12"}].map(function(k){return<div key={k.l} style={{background:"#ffffff14",borderRadius:5,padding:"8px 6px",textAlign:"center"}}>
+          <div style={{color:"#ffffffaa",fontSize:7,fontWeight:700,letterSpacing:.8,marginBottom:3}}>{k.l}</div>
           <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,color:"#fff",lineHeight:1}}>{k.v}</div>
         </div>;})}
       </div>
       <Btn onClick={gen} disabled={ld||credits<=0} full icon={ld?undefined:"bolt"} v="primary">
         {ld?"Analisando com IA...":credits<=0?"Sem créditos — Upgrade":"Gerar análise com IA real"}
       </Btn>
-      {totalSess===0&&!ld&&<div style={{marginTop:8,color:"#ffffff44",fontSize:9,textAlign:"center"}}>Registre pelo menos 1 treino para análise mais precisa</div>}
+      {totalSess===0&&!ld&&<div style={{marginTop:8,color:"#ffffff99",fontSize:9,textAlign:"center"}}>Registre pelo menos 1 treino para análise mais precisa</div>}
     </div>
 
     {/* Reports */}
@@ -1694,18 +1694,18 @@ function ProfileTab({user,activity,onLogout,onSaveProfile,onChangeSport}){
         <div style={{width:52,height:52,background:C.red,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontFamily:"'Bebas Neue',sans-serif",fontSize:24,letterSpacing:1,flexShrink:0}}>{(d.name||"A").charAt(0).toUpperCase()}</div>
         <div style={{flex:1}}>
           <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,color:"#fff",letterSpacing:.5}}>{(d.name||"ATLETA").toUpperCase()}</div>
-          <div style={{color:"#ffffff44",fontSize:10,marginTop:1}}>{sp?(sp.icon+" "+sp.name+" · "+activity.position):"Nenhum esporte"}</div>
-          <div style={{color:"#ffffff33",fontSize:9,marginTop:1}}>{user?user.email:""}</div>
+          <div style={{color:"#ffffffbb",fontSize:10,marginTop:1}}>{sp?(sp.icon+" "+sp.name+" · "+activity.position):"Nenhum esporte"}</div>
+          <div style={{color:"#ffffff99",fontSize:9,marginTop:1}}>{user?user.email:""}</div>
         </div>
-        <span style={{background:"#ffffff10",color:"#ffffff88",fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:4,letterSpacing:.5}}>{(user?user.plan:"FREE").toUpperCase()}</span>
+        <span style={{background:"#ffffff20",color:"#ffffffcc",fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:4,letterSpacing:.5}}>{(user?user.plan:"FREE").toUpperCase()}</span>
       </div>
       {/* XP inline */}
       <div style={{marginTop:12}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-          <span style={{color:"#ffffff55",fontSize:9,fontWeight:700}}>{curLevel.label.toUpperCase()+" · "+xp+" XP"}</span>
-          {nxtLevel&&<span style={{color:"#ffffff33",fontSize:9}}>{"→ "+nxtLevel.label+" ("+(xpNext-xp)+" restam)"}</span>}
+          <span style={{color:"#ffffffaa",fontSize:9,fontWeight:700}}>{curLevel.label.toUpperCase()+" · "+xp+" XP"}</span>
+          {nxtLevel&&<span style={{color:"#ffffff99",fontSize:9}}>{"→ "+nxtLevel.label+" ("+(xpNext-xp)+" restam)"}</span>}
         </div>
-        <div style={{height:3,background:"#ffffff10",borderRadius:99,overflow:"hidden"}}>
+        <div style={{height:3,background:"#ffffff25",borderRadius:99,overflow:"hidden"}}>
           <div style={{height:"100%",width:xpPct+"%",background:C.red,borderRadius:99,transition:"width .8s"}}/>
         </div>
       </div>
@@ -1753,6 +1753,8 @@ function ProfileTab({user,activity,onLogout,onSaveProfile,onChangeSport}){
 /* ─── MAIN APP ───────────────────────────────────────────── */
 function MainApp({user,initialActivity,onSaveSession,onSavePlanProgress,onSaveActivity,onSaveProfile,onLogout}){
   usePWA();
+  var isCoach=getEffectivePlan(user)==="coach"||getEffectivePlan(user)==="admin";
+  var[selAthlete,sSelAthlete]=useState(null);
   var[tab,sTab]=useState("home");
   var[activities,setActivities]=useState(initialActivity?[initialActivity]:[]);
   var[showOb,sShowOb]=useState(false);
@@ -1827,7 +1829,7 @@ function MainApp({user,initialActivity,onSaveSession,onSavePlanProgress,onSaveAc
     sShowOb(false);
   }
 
-  var TABS=[{id:"home",label:"Início",icon:"home"},{id:"plan",label:"Treino",icon:"plan"},{id:"reg",fab:true},{id:"ai",label:"IA",icon:"ai"},{id:"me",label:"Perfil",icon:"profile"}];
+  var TABS=[{id:"home",label:"Início",icon:"home"},{id:"plan",label:"Treino",icon:"plan"},{id:"reg",fab:true},{id:"xp",label:"XP",icon:"trophy"},{id:"me",label:"Perfil",icon:"profile"}];
 
   if(showOb)return<div>
     <div style={{background:C.white,borderBottom:"1px solid "+C.border,padding:"0 16px",height:50,display:"flex",alignItems:"center",gap:10}}>
@@ -1869,10 +1871,11 @@ function MainApp({user,initialActivity,onSaveSession,onSavePlanProgress,onSaveAc
     </div>
     <div style={{maxWidth:800,margin:"0 auto",padding:"14px 14px calc(72px + "+SAB+")"}}>
       <div key={tab} className="au">
-        {tab==="home"&&<DashboardTab activity={ca} user={Object.assign({},user,{plan:userPlan})} onGoToPlan={function(){sTab("plan");}} onSaveBodyLog={saveBodyLog}/>}
+        {tab==="home"&&!isCoach&&<DashboardTab activity={ca} user={Object.assign({},user,{plan:userPlan})} onGoToPlan={function(){sTab("plan");}} onSaveBodyLog={saveBodyLog}/>}
+        {tab==="home"&&isCoach&&<CoachDashboard user={user} onSelectAthlete={sSelAthlete} selAthlete={selAthlete} onBack={function(){sSelAthlete(null);}}/>}
         {tab==="plan"&&<PlanTab activity={ca} onMarkComplete={markComplete} onXPGain={gainXP}/>}
         {tab==="reg"&&<RegisterTab onSave={addSession} activity={ca} onXPGain={gainXP}/>}
-        {tab==="ai"&&<AITab activity={ca} user={Object.assign({},user,{plan:userPlan})}/>}
+        {tab==="xp"&&<AchievementsPanel activity={ca}/>}
         {tab==="me"&&<ProfileTab user={Object.assign({},user,{plan:userPlan})} activity={ca} onLogout={onLogout} onSaveProfile={onSaveProfile} onChangeSport={changeSport}/>}
       </div>
       {activities.length===0&&tab!=="me"&&<Card style={{padding:28,textAlign:"center",marginTop:16}}>
@@ -1883,6 +1886,207 @@ function MainApp({user,initialActivity,onSaveSession,onSavePlanProgress,onSaveAc
     </div>
   </div>;
 }
+
+/* ─── XP / CONQUISTAS ───────────────────────────────────── */
+var ACHIEVEMENTS=[
+  {id:"first_session",icon:"⚡",name:"Primeiro Treino",desc:"Registrou a primeira sessão",xp:100,check:function(a){return(a.sessions||[]).length>=1;}},
+  {id:"week_streak",icon:"🔥",name:"Semana em Chamas",desc:"Completou uma semana inteira",xp:200,check:function(a){return(a.xp||0)>=200;}},
+  {id:"plan_complete",icon:"🏅",name:"Ciclo Completo",desc:"Finalizou as 12 semanas",xp:500,check:function(a){return a.plan&&a.plan.currentWeek>=12;}},
+  {id:"ten_sessions",icon:"💪",name:"Consistente",desc:"10 treinos registrados",xp:150,check:function(a){return(a.sessions||[]).length>=10;}},
+  {id:"pr_bench",icon:"🏋️",name:"PR Supino",desc:"Registrou um recorde pessoal",xp:100,check:function(a){return a.prs&&a.prs.bench;}},
+  {id:"weight_goal",icon:"🎯",name:"Meta de Peso",desc:"Atingiu a meta de peso",xp:250,check:function(a){
+    var logs=a.bodyLogs||[];
+    return logs.length>0&&a.weightGoal&&parseFloat(logs[logs.length-1].w)<=parseFloat(a.weightGoal);
+  }},
+  {id:"five_weeks",icon:"📅",name:"5 Semanas",desc:"5 semanas de treino",xp:300,check:function(a){return a.plan&&a.plan.currentWeek>=5;}},
+  {id:"rpe_high",icon:"🔴",name:"No Limite",desc:"Registrou RPE 10",xp:75,check:function(a){return(a.sessions||[]).some(function(s){return+s.rpe>=10;});}},
+];
+function getUnlocked(activity){return ACHIEVEMENTS.filter(function(ach){try{return ach.check(activity);}catch(e){return false;}});}
+
+function AchievementsPanel({activity}){
+  var unlocked=getUnlocked(activity||{});
+  var locked=ACHIEVEMENTS.filter(function(a){return!unlocked.find(function(u){return u.id===a.id;});});
+  return<div style={{display:"flex",flexDirection:"column",gap:8}}>
+    {/* XP Summary */}
+    <div style={{background:C.dark,borderRadius:8,padding:"14px 16px"}}>
+      <div style={{color:"#ffffffaa",fontSize:9,fontWeight:700,letterSpacing:.8,marginBottom:10}}>SEU PROGRESSO</div>
+      <div style={{display:"flex",alignItems:"center",gap:14,flexWrap:"wrap"}}>
+        <div>
+          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:40,color:C.red,lineHeight:1}}>{activity?activity.xp||0:0}</div>
+          <div style={{color:"#ffffffaa",fontSize:9,marginTop:1}}>XP TOTAL</div>
+        </div>
+        <div style={{flex:1,minWidth:120}}>
+          <XPBar xp={activity?activity.xp||0:0}/>
+        </div>
+      </div>
+      <div style={{display:"flex",gap:10,marginTop:12}}>
+        {[{l:"Conquistas",v:unlocked.length+"/"+ACHIEVEMENTS.length},{l:"Treinos",v:(activity?activity.sessions||[]:[]  ).length},{l:"Semanas",v:activity&&activity.plan?activity.plan.currentWeek-1:0}].map(function(k){return<div key={k.l} style={{flex:1,background:"#ffffff14",borderRadius:6,padding:"8px 6px",textAlign:"center"}}>
+          <div style={{color:"#ffffffaa",fontSize:8,fontWeight:700,letterSpacing:.5,marginBottom:2}}>{k.l.toUpperCase()}</div>
+          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,color:"#fff",lineHeight:1}}>{k.v}</div>
+        </div>;})}
+      </div>
+    </div>
+    {/* Unlocked */}
+    {unlocked.length>0&&<div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"14px 16px"}}>
+      <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",marginBottom:10}}>{"CONQUISTADAS ("+unlocked.length+")"}</div>
+      <div style={{display:"flex",flexDirection:"column",gap:6}}>
+        {unlocked.map(function(a){return<div key={a.id} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 12px",background:C.green+"08",border:"1px solid "+C.green+"25",borderRadius:6}}>
+          <div style={{fontSize:22,flexShrink:0}}>{a.icon}</div>
+          <div style={{flex:1}}><div style={{fontWeight:700,fontSize:13,color:C.text}}>{a.name}</div><div style={{color:C.grayLight,fontSize:10,marginTop:1}}>{a.desc}</div></div>
+          <span style={{background:C.green+"14",color:C.green,fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:4}}>{"+" +a.xp+" XP"}</span>
+        </div>;})}
+      </div>
+    </div>}
+    {/* Locked */}
+    <div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"14px 16px"}}>
+      <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",marginBottom:10}}>{"EM ANDAMENTO ("+locked.length+")"}</div>
+      <div style={{display:"flex",flexDirection:"column",gap:5}}>
+        {locked.map(function(a){return<div key={a.id} style={{display:"flex",alignItems:"center",gap:12,padding:"9px 12px",background:C.faint,border:"1px solid "+C.border,borderRadius:6,opacity:.7}}>
+          <div style={{fontSize:20,flexShrink:0,filter:"grayscale(1)"}}>{a.icon}</div>
+          <div style={{flex:1}}><div style={{fontWeight:600,fontSize:12,color:C.gray}}>{a.name}</div><div style={{color:C.grayLight,fontSize:10,marginTop:1}}>{a.desc}</div></div>
+          <div style={{display:"flex",alignItems:"center",gap:3}}><Icon name="lock" size={11} color={C.grayLight}/><span style={{color:C.grayLight,fontSize:9,fontWeight:700}}>{a.xp+" XP"}</span></div>
+        </div>;})}
+      </div>
+    </div>
+  </div>;
+}
+
+/* ─── COACH DASHBOARD ────────────────────────────────────── */
+var MOCK_ATHLETES=[
+  {id:"a1",name:"João Silva",sport:"flag",position:"Wide Receiver",level:"Semi-profissional",xp:1820,plan:{currentWeek:6},sessions:[{rpe:8,ts:Date.now()-86400000},{rpe:7,ts:Date.now()-3*86400000}],bodyLogs:[{w:82.4,date:"18/03"}],prs:{bench:"100",squat:"140"},lastSeen:"Hoje, 08:32",acwr:1.12,weekPct:75,alerts:[]},
+  {id:"a2",name:"Maria Costa",sport:"corrida",position:"10km",level:"Amador",xp:640,plan:{currentWeek:3},sessions:[],bodyLogs:[{w:61.2,date:"10/03"}],prs:{},lastSeen:"Há 4 dias",acwr:0.0,weekPct:0,alerts:["low_adherence"]},
+  {id:"a3",name:"Pedro Alves",sport:"muscu",position:"Hipertrofia",level:"Amador",xp:980,plan:{currentWeek:5},sessions:[{rpe:9,ts:Date.now()-86400000},{rpe:9,ts:Date.now()-2*86400000},{rpe:8,ts:Date.now()-3*86400000}],bodyLogs:[{w:88.1,date:"20/03"}],prs:{bench:"120",squat:"160",deadlift:"180"},lastSeen:"Ontem",acwr:1.48,weekPct:100,alerts:["high_acwr"]},
+  {id:"a4",name:"Ana Beatriz",sport:"mma",position:"Peso Leve",level:"Semi-profissional",xp:2100,plan:{currentWeek:9},sessions:[{rpe:8,ts:Date.now()-86400000}],bodyLogs:[{w:70.3,date:"21/03"}],prs:{},lastSeen:"Hoje, 06:15",acwr:1.05,weekPct:80,alerts:[]},
+];
+
+function CoachDashboard({user,onSelectAthlete,selAthlete,onBack}){
+  var[tab,sTab]=useState("athletes");
+  if(selAthlete)return<CoachAthleteView athlete={selAthlete} onBack={onBack}/>;
+
+  var totalAlerts=MOCK_ATHLETES.reduce(function(a,ath){return a+ath.alerts.length;},0);
+  var trained=MOCK_ATHLETES.filter(function(a){return a.lastSeen.includes("Hoje");}).length;
+
+  return<div className="au" style={{display:"flex",flexDirection:"column",gap:0,padding:"0 0 24px"}}>
+    {/* Coach header */}
+    <div style={{background:C.dark,borderRadius:8,padding:"16px",marginBottom:14}}>
+      <div style={{color:"#ffffffaa",fontSize:9,fontWeight:700,letterSpacing:1.5,marginBottom:4}}>MODO COACH</div>
+      <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,color:"#fff",letterSpacing:.5}}>{(user?user.name:"TREINADOR").toUpperCase()}</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginTop:12}}>
+        {[{l:"ATLETAS",v:MOCK_ATHLETES.length},{l:"TREINARAM HOJE",v:trained},{l:"ALERTAS",v:totalAlerts,red:totalAlerts>0}].map(function(k){return<div key={k.l} style={{background:"#ffffff14",borderRadius:6,padding:"8px 6px",textAlign:"center"}}>
+          <div style={{color:"#ffffffaa",fontSize:7,fontWeight:700,letterSpacing:.8,marginBottom:3}}>{k.l}</div>
+          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,color:k.red?C.red:"#fff",lineHeight:1}}>{k.v}</div>
+        </div>;})}
+      </div>
+    </div>
+
+    {/* Alerts */}
+    {totalAlerts>0&&<div style={{background:C.amberBg,border:"1px solid "+C.amber+"30",borderRadius:8,padding:"12px 14px",marginBottom:10}}>
+      <div style={{color:C.amber,fontSize:9,fontWeight:700,letterSpacing:.8,marginBottom:6}}>⚠ ATENÇÃO NECESSÁRIA</div>
+      {MOCK_ATHLETES.filter(function(a){return a.alerts.length>0;}).map(function(a){return<div key={a.id} style={{fontSize:11,color:C.text,marginBottom:2}}>
+        <strong>{a.name}:</strong> {a.alerts.includes("high_acwr")?"ACWR "+a.acwr.toFixed(2)+" — risco de overreaching":a.alerts.includes("low_adherence")?"Sem treinar há 4+ dias":""}
+      </div>;})}
+    </div>}
+
+    {/* Athletes list */}
+    <div style={{display:"flex",flexDirection:"column",gap:6}}>
+      {MOCK_ATHLETES.map(function(a){
+        var sp=SPORTS.find(function(s){return s.id===a.sport;});
+        var acwrColor=a.acwr<0.8?C.blue:a.acwr<=1.3?C.green:a.acwr<=1.5?C.amber:C.red;
+        var statusColor=a.lastSeen.includes("Hoje")?C.green:a.lastSeen.includes("Ontem")?C.amber:C.red;
+        return<div key={a.id} onClick={function(){onSelectAthlete(a);}} style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,overflow:"hidden",cursor:"pointer",transition:"box-shadow .12s"}}>
+          <div style={{display:"flex",alignItems:"stretch"}}>
+            <div style={{width:3,background:a.alerts.length>0?C.amber:C.green,flexShrink:0}}/>
+            <div style={{flex:1,padding:"13px 14px"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                <div>
+                  <div style={{fontWeight:700,fontSize:14,color:C.text}}>{a.name}</div>
+                  <div style={{color:C.grayLight,fontSize:10,marginTop:1}}>{sp?sp.icon+" "+sp.name:""} · {a.position} · {a.level}</div>
+                </div>
+                <div style={{textAlign:"right"}}>
+                  <div style={{width:7,height:7,borderRadius:99,background:statusColor,marginLeft:"auto",marginBottom:3}}/>
+                  <div style={{color:C.grayLight,fontSize:9}}>{a.lastSeen}</div>
+                </div>
+              </div>
+              <div style={{display:"flex",gap:6,marginTop:10,flexWrap:"wrap"}}>
+                <span style={{background:C.faint,border:"1px solid "+C.border,padding:"2px 7px",borderRadius:4,fontSize:9,color:C.gray}}>{"S"+a.plan.currentWeek+"/12"}</span>
+                <span style={{background:C.faint,border:"1px solid "+C.border,padding:"2px 7px",borderRadius:4,fontSize:9,color:C.gray}}>{"Aderência "+a.weekPct+"%"}</span>
+                {a.acwr>0&&<span style={{background:acwrColor+"14",border:"1px solid "+acwrColor+"30",padding:"2px 7px",borderRadius:4,fontSize:9,color:acwrColor,fontWeight:700}}>{"ACWR "+a.acwr.toFixed(2)}</span>}
+                <span style={{background:C.faint,border:"1px solid "+C.border,padding:"2px 7px",borderRadius:4,fontSize:9,color:C.gray}}>{a.xp+" XP"}</span>
+              </div>
+            </div>
+          </div>
+        </div>;
+      })}
+    </div>
+
+    <div style={{marginTop:10,padding:"10px 14px",background:C.faint,borderRadius:8,textAlign:"center"}}>
+      <div style={{color:C.grayLight,fontSize:10,marginBottom:4}}>Convide um atleta</div>
+      <Btn sm v="secondary" onClick={function(){alert("Em breve: convite por link ou e-mail");}}>+ Adicionar atleta</Btn>
+    </div>
+  </div>;
+}
+
+function CoachAthleteView({athlete,onBack}){
+  var sp=SPORTS.find(function(s){return s.id===athlete.sport;});
+  var xp=athlete.xp||0;
+  var level=getLevel(xp);
+  return<div className="au" style={{display:"flex",flexDirection:"column",gap:10,padding:"0 0 24px"}}>
+    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:4}}>
+      <button onClick={onBack} style={{width:30,height:30,borderRadius:5,background:C.faint,border:"1px solid "+C.border,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Icon name="back" size={14} color={C.gray}/></button>
+      <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:20,color:C.text}}>{athlete.name.toUpperCase()}</div>
+    </div>
+    {/* Athlete hero */}
+    <div style={{background:C.dark,borderRadius:8,padding:"14px 16px"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+        <div>
+          <div style={{color:"#ffffffaa",fontSize:10,marginBottom:2}}>{sp?sp.icon+" "+sp.name:""} · {athlete.position}</div>
+          <div style={{color:"#fff",fontWeight:700,fontSize:13}}>{level.label} · {xp} XP</div>
+          <div style={{color:"#ffffffaa",fontSize:9,marginTop:2}}>{"S"+athlete.plan.currentWeek+"/12 · Aderência "+athlete.weekPct+"%"}</div>
+        </div>
+        <div style={{textAlign:"right"}}>
+          <div style={{color:C.red,fontFamily:"'Bebas Neue',sans-serif",fontSize:36,lineHeight:1}}>{Math.min(100,Math.round(athlete.weekPct*.4+Math.min(athlete.sessions.length*5,30)+20))}</div>
+          <div style={{color:"#ffffffaa",fontSize:8}}>PERF SCORE</div>
+        </div>
+      </div>
+    </div>
+    {/* PRs */}
+    {Object.keys(athlete.prs||{}).length>0&&<div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"14px 16px"}}>
+      <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",marginBottom:10}}>RECORDS PESSOAIS</div>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+        {Object.entries(athlete.prs||{}).filter(function(e){return e[1];}).map(function(e){return<div key={e[0]} style={{background:C.faint,borderRadius:6,padding:"8px 12px",textAlign:"center"}}>
+          <div style={{color:C.grayLight,fontSize:8,fontWeight:700,marginBottom:2}}>{e[0].toUpperCase()}</div>
+          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,color:C.text}}>{e[1]}<span style={{fontSize:9,color:C.grayLight,fontFamily:"Inter,sans-serif"}}> kg</span></div>
+        </div>;})}
+      </div>
+    </div>}
+    {/* Histórico de sessões */}
+    <div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"14px 16px"}}>
+      <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",marginBottom:10}}>ÚLTIMAS SESSÕES</div>
+      {athlete.sessions.length===0
+        ?<div style={{color:C.grayLight,fontSize:12,textAlign:"center",padding:"16px 0"}}>Nenhuma sessão registrada</div>
+        :<div style={{display:"flex",flexDirection:"column",gap:5}}>
+          {athlete.sessions.slice(0,5).map(function(s,i){return<div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 10px",background:C.faint,borderRadius:5}}>
+            <span style={{color:C.text,fontSize:12,fontWeight:600}}>{s.type||"Treino"}</span>
+            <div style={{display:"flex",gap:8,alignItems:"center"}}>
+              {s.rpe&&<span style={{color:s.rpe>=8?C.red:s.rpe>=6?C.amber:C.green,fontSize:11,fontWeight:700}}>{"RPE "+s.rpe}</span>}
+              <span style={{color:C.grayLight,fontSize:10}}>{s.ts?new Date(s.ts).toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"}):"—"}</span>
+            </div>
+          </div>;})}
+        </div>}
+    </div>
+    {/* Coach actions */}
+    <div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"14px 16px"}}>
+      <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",marginBottom:10}}>AÇÕES DO COACH</div>
+      <div style={{display:"flex",flexDirection:"column",gap:6}}>
+        {[{l:"Enviar nota ao atleta",icon:"edit"},{l:"Ajustar plano de treino",icon:"plan"},{l:"Prescrever treino avulso",icon:"reg"},{l:"Ver análise de IA",icon:"bolt"}].map(function(a){return<button key={a.l} onClick={function(){alert("Em breve: "+a.l);}} style={{display:"flex",alignItems:"center",gap:10,padding:"11px 13px",background:C.faint,border:"1px solid "+C.border,borderRadius:6,cursor:"pointer",textAlign:"left"}}>
+          <Icon name={a.icon} size={16} color={C.red}/>
+          <span style={{color:C.text,fontSize:13,fontWeight:600}}>{a.l}</span>
+        </button>;})}
+      </div>
+    </div>
+  </div>;
+}
+
 
 /* ─── APP ROOT ───────────────────────────────────────────── */
 function AppRoot(){
