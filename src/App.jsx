@@ -646,6 +646,86 @@ function RadarChart({stats,size=120}){
     {pts.map(function(p,i){return<g key={i}><circle cx={p.x} cy={p.y} r="3" fill={C.red}/><text x={p.lx.toFixed(1)} y={p.ly.toFixed(1)} textAnchor="middle" dominantBaseline="middle" fontSize="7" fill={C.gray} fontWeight="600">{p.label}</text></g>;})}
   </svg>;
 }
+/* ─── DUAL LINE CHART (CTL/ATL) ──────────────────────────── */
+function DualLine({ctl,atl,h=60}){
+  if(!ctl||ctl.length<2)return<div style={{height:h,background:C.faint,borderRadius:8}}/>;
+  var W=300,H=h;
+  var all=ctl.concat(atl),max=Math.max.apply(null,all)||1,min=0,range=max-min;
+  function path(data,col,dash){
+    var pts=data.map(function(v,i){return[(i/(data.length-1))*(W-8)+4,H-4-((v-min)/range)*(H-10)];});
+    var d="M"+pts.map(function(p){return p[0].toFixed(1)+","+p[1].toFixed(1);}).join(" L");
+    return<path d={d} fill="none" stroke={col} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray={dash||"none"}/>;
+  }
+  var lastCTL=ctl[ctl.length-1],lastATL=atl[atl.length-1];
+  var ly_ctl=H-4-((lastCTL-min)/range)*(H-10),ly_atl=H-4-((lastATL-min)/range)*(H-10);
+  return<svg viewBox={"0 0 "+W+" "+H} style={{width:"100%",height:H}}>
+    {path(ctl,C.blue)}{path(atl,C.red,"4 2")}
+    <circle cx={W-4} cy={ly_ctl.toFixed(1)} r="3.5" fill={C.blue}/>
+    <circle cx={W-4} cy={ly_atl.toFixed(1)} r="3.5" fill={C.red}/>
+  </svg>;
+}
+
+/* ─── CALENDAR MODAL ─────────────────────────────────────── */
+function CalendarModal({sessions,onClose}){
+  var now=new Date();
+  var[vm,sVm]=useState(now.getMonth());
+  var[vy,sVy]=useState(now.getFullYear());
+  var[sel,sSel]=useState(null);
+  var monthName=new Date(vy,vm,1).toLocaleDateString("pt-BR",{month:"long",year:"numeric"});
+  var firstDow=new Date(vy,vm,1).getDay();
+  var daysInM=new Date(vy,vm+1,0).getDate();
+  var sessMap={};
+  sessions.forEach(function(s){
+    var d=new Date(s.ts||Date.now());
+    if(d.getMonth()===vm&&d.getFullYear()===vy){
+      var k=d.getDate();
+      if(!sessMap[k])sessMap[k]=[];
+      sessMap[k].push(s);
+    }
+  });
+  var rpeColor=function(r){return(!r||r<=5)?C.green:r<=7?C.amber:C.red;};
+  var selSess=sel?(sessMap[sel]||[]):[];
+  function prevM(){var d=new Date(vy,vm-1,1);sVm(d.getMonth());sVy(d.getFullYear());sSel(null);}
+  function nextM(){var d=new Date(vy,vm+1,1);sVm(d.getMonth());sVy(d.getFullYear());sSel(null);}
+  return<div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.8)",display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
+    <div className="pop" style={{background:C.white,borderRadius:"16px 16px 0 0",padding:"20px 20px calc(20px + "+SAB+")",maxWidth:540,width:"100%",maxHeight:"85vh",overflowY:"auto"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <button onClick={prevM} style={{width:28,height:28,borderRadius:5,background:C.faint,border:"none",cursor:"pointer",fontWeight:700,color:C.gray,fontSize:13}}>‹</button>
+          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:17,color:C.text,letterSpacing:.5,textTransform:"capitalize",minWidth:160,textAlign:"center"}}>{monthName}</div>
+          <button onClick={nextM} style={{width:28,height:28,borderRadius:5,background:C.faint,border:"none",cursor:"pointer",fontWeight:700,color:C.gray,fontSize:13}}>›</button>
+        </div>
+        <button onClick={onClose} style={{background:"none",border:"none",fontSize:18,cursor:"pointer",color:C.gray,padding:4}}>✕</button>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:3,marginBottom:3}}>
+        {["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"].map(function(d){return<div key={d} style={{textAlign:"center",color:C.grayLight,fontSize:8,fontWeight:700,padding:"3px 0"}}>{d}</div>;})}
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:3}}>
+        {Array.from({length:firstDow}).map(function(_,i){return<div key={"e"+i}/>;})}
+        {Array.from({length:daysInM}).map(function(_,i){
+          var day=i+1,hasSess=sessMap[day],isToday=day===now.getDate()&&vm===now.getMonth()&&vy===now.getFullYear(),isSel=sel===day;
+          return<button key={day} onClick={function(){sSel(isSel?null:day);}} style={{border:"none",cursor:"pointer",borderRadius:7,padding:"7px 2px",background:isSel?C.red:isToday?C.redMid:"transparent",display:"flex",flexDirection:"column",alignItems:"center",gap:2,minHeight:38}}>
+            <span style={{fontSize:12,fontWeight:isToday||isSel?700:400,color:isSel?"#fff":isToday?C.red:C.text}}>{day}</span>
+            {hasSess&&<div style={{display:"flex",gap:2,justifyContent:"center",flexWrap:"wrap"}}>
+              {hasSess.slice(0,3).map(function(s,si){return<div key={si} style={{width:5,height:5,borderRadius:"50%",background:isSel?"rgba(255,255,255,.8)":rpeColor(s.rpe)}}/>;})}</div>}
+          </button>;
+        })}
+      </div>
+      {sel&&<div style={{marginTop:14,borderTop:"1px solid "+C.border,paddingTop:12}}>
+        {selSess.length===0
+          ?<div style={{color:C.grayLight,fontSize:12,textAlign:"center",padding:"12px 0"}}>Nenhum treino registrado neste dia.</div>
+          :selSess.map(function(s,i){return<div key={i} style={{background:C.faint,borderRadius:8,padding:"10px 12px",marginBottom:8,borderLeft:"3px solid "+rpeColor(s.rpe)}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+              <div style={{fontWeight:700,fontSize:13,color:C.text}}>{s.type||"Treino"}</div>
+              <div style={{background:rpeColor(s.rpe)+"14",color:rpeColor(s.rpe),fontSize:9,fontWeight:700,padding:"2px 6px",borderRadius:4}}>RPE {s.rpe||"—"}</div>
+            </div>
+            <div style={{color:C.grayLight,fontSize:10,marginTop:3}}>{(s.duration||60)+"min"+(s.exercises&&s.exercises.length?" · "+s.exercises.length+" exercícios":"")}</div>
+          </div>;})}
+      </div>}
+    </div>
+  </div>;
+}
+
 function ProgressRing({pct,color,size=80,stroke=7,value,label}){
   var r=(size-stroke)/2,circ=2*Math.PI*r,dash=circ*Math.min(pct,100)/100;
   return<div style={{position:"relative",width:size,height:size,flexShrink:0}}>
@@ -1056,6 +1136,48 @@ function DashboardTab({activity,user,onGoToPlan,onSaveBodyLog}){
   var[prData,setPrData]=useState(activity?activity.prs||{bench:"",squat:"",deadlift:"",sprint40:"",sprint10:""}:{bench:"",squat:"",deadlift:"",sprint40:"",sprint10:""});
   var[showPREdit,sShowPREdit]=useState(false);
 
+  /* ── Readiness Score ── */
+  function calcReadiness(sessArr){
+    if(sessArr.length===0)return null;
+    var score=50;
+    var aw=calcACWR(sessArr);
+    if(aw===null)score+=0;
+    else if(aw>=0.8&&aw<=1.3)score+=20;
+    else if(aw<0.8)score+=10;
+    else if(aw<=1.5)score-=10;
+    else score-=25;
+    var recent=sessArr.slice(0,3);
+    var avgR=recent.length>0?recent.reduce(function(a,s){return a+(+s.rpe||7);},0)/recent.length:7;
+    if(avgR<=5)score+=20;else if(avgR<=7)score+=8;else if(avgR<=8.5)score-=5;else score-=15;
+    var daysSince=sessArr.length>0?Math.floor((Date.now()-(sessArr[0].ts||Date.now()))/86400000):99;
+    if(daysSince===1||daysSince===2)score+=15;
+    else if(daysSince===0)score+=5;
+    else if(daysSince<=4)score+=5;
+    else score-=10;
+    return Math.max(5,Math.min(100,score));
+  }
+  var readiness=calcReadiness(sessions);
+  var readinessLabel=!readiness?"—":readiness>=80?"PRONTO":readiness>=60?"BOM":readiness>=40?"MODERADO":"RECUPERAR";
+  var readinessColor=!readiness?C.grayLight:readiness>=80?C.green:readiness>=60?"#5AC45A":readiness>=40?C.amber:C.red;
+
+  /* ── CTL/ATL/TSB (Fitness Curve) ── */
+  function calcFitnessCurve(sessArr){
+    var days=42,now2=new Date();now2.setHours(0,0,0,0);
+    var ctl=0,atl=0,ctlArr=[],atlArr=[],tsbArr=[];
+    for(var i=days-1;i>=0;i--){
+      var day=new Date(now2);day.setDate(now2.getDate()-i);
+      var ds=day.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"});
+      var load=sessArr.filter(function(s){return s.date===ds;}).reduce(function(a,s){return a+(+s.rpe||7)*(+s.duration||45)/60;},0);
+      ctl=ctl+(load-ctl)/42;atl=atl+(load-atl)/7;
+      ctlArr.push(parseFloat(ctl.toFixed(2)));atlArr.push(parseFloat(atl.toFixed(2)));tsbArr.push(parseFloat((ctl-atl).toFixed(2)));
+    }
+    return{ctl:ctlArr.slice(-28),atl:atlArr.slice(-28),tsb:tsbArr[tsbArr.length-1],curCTL:ctlArr[ctlArr.length-1],curATL:atlArr[atlArr.length-1]};
+  }
+  var fitCurve=sessions.length>0?calcFitnessCurve(sessions):null;
+
+  /* ── Calendar modal ── */
+  var[showCal,sShowCal]=useState(false);
+
   /* ── Load chart from real sessions ── */
   var loadByDay=(function(){
     var days=["S","T","Q","Q","S","S","D"];
@@ -1099,6 +1221,25 @@ function DashboardTab({activity,user,onGoToPlan,onSaveBodyLog}){
         <span style={{color:"#ffffff99",fontSize:8}}>S{plan?plan.currentWeek:1}/12</span>
       </div>
     </div>
+
+    {/* ── Readiness Score ── */}
+    {readiness&&<div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"14px 16px",marginBottom:12,display:"flex",alignItems:"center",gap:14}}>
+      <div style={{width:54,height:54,borderRadius:"50%",background:readinessColor+"14",border:"2px solid "+readinessColor+"44",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+        <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,color:readinessColor,lineHeight:1}}>{readiness}</div>
+      </div>
+      <div style={{flex:1}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
+          <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8}}>PRONTIDÃO HOJE</div>
+          <span style={{background:readinessColor+"14",color:readinessColor,fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:4}}>{readinessLabel}</span>
+        </div>
+        <div style={{height:5,background:C.faint,borderRadius:99,overflow:"hidden"}}>
+          <div style={{height:"100%",width:readiness+"%",background:"linear-gradient(90deg,"+readinessColor+"88,"+readinessColor+")",borderRadius:99,transition:"width .8s"}}/>
+        </div>
+        <div style={{color:C.grayLight,fontSize:9,marginTop:4}}>
+          {readiness>=80?"Carga ideal. Sessão intensa recomendada.":readiness>=60?"Condição boa. Mantenha o plano.":readiness>=40?"Reduza a intensidade hoje.":"Priorize recuperação e descanso."}
+        </div>
+      </div>
+    </div>}
 
     {/* ── KPIs reais ── */}
     <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:16}}>
@@ -1180,10 +1321,14 @@ function DashboardTab({activity,user,onGoToPlan,onSaveBodyLog}){
     </div>
 
     {/* ── Heatmap de frequência REAL ── */}
+    {showCal&&<CalendarModal sessions={sessions} onClose={function(){sShowCal(false);}}/>}
     <div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"16px",marginBottom:12}}>
-      <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",marginBottom:10}}>
-        FREQUÊNCIA DE TREINO
-        {totalSess===0&&<span style={{color:C.grayLight,fontSize:9,fontWeight:400,textTransform:"none",marginLeft:6}}>— Registre treinos para preencher</span>}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+        <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase"}}>
+          FREQUÊNCIA DE TREINO
+          {totalSess===0&&<span style={{color:C.grayLight,fontSize:9,fontWeight:400,textTransform:"none",marginLeft:6}}>— Registre treinos para preencher</span>}
+        </div>
+        <button onClick={function(){sShowCal(true);}} style={{background:"none",border:"1px solid "+C.border,borderRadius:4,padding:"3px 8px",fontSize:9,fontWeight:700,color:C.gray,cursor:"pointer"}}>Calendário</button>
       </div>
       <div style={{display:"flex",gap:5}}>
         <div style={{display:"flex",flexDirection:"column",gap:4,paddingTop:18}}>
@@ -1217,6 +1362,31 @@ function DashboardTab({activity,user,onGoToPlan,onSaveBodyLog}){
         :<div style={{height:52,background:C.faint,borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{color:C.grayLight,fontSize:10}}>Sem treinos registrados esta semana</span></div>}
       {acwrReal&&acwr>1.3&&<div style={{marginTop:10,padding:"8px 10px",background:C.amberBg,borderRadius:5,border:"1px solid "+C.amber+"30",fontSize:11,color:C.amber,fontWeight:500}}>⚠ Reduza volume 15% esta semana.</div>}
     </div>
+
+    {/* ── Curva CTL/ATL (Fitness vs Fadiga) ── */}
+    {fitCurve&&(fitCurve.curCTL>0||fitCurve.curATL>0)&&<div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"16px",marginBottom:12,marginTop:12}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:10}}>
+        <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase"}}>FITNESS VS FADIGA — 28 DIAS</div>
+        <div style={{display:"flex",gap:10,alignItems:"center"}}>
+          <div style={{display:"flex",gap:3,alignItems:"center"}}><div style={{width:10,height:2,background:C.blue,borderRadius:1}}/><span style={{fontSize:8,color:C.blue,fontWeight:700}}>CTL</span></div>
+          <div style={{display:"flex",gap:3,alignItems:"center"}}><div style={{width:10,height:2,background:C.red,borderRadius:1,borderBottom:"1px dashed "+C.red}}/><span style={{fontSize:8,color:C.red,fontWeight:700}}>ATL</span></div>
+        </div>
+      </div>
+      <DualLine ctl={fitCurve.ctl} atl={fitCurve.atl} h={64}/>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginTop:10}}>
+        {[
+          {l:"FITNESS (CTL)",v:fitCurve.curCTL.toFixed(1),col:C.blue},
+          {l:"FADIGA (ATL)",v:fitCurve.curATL.toFixed(1),col:C.red},
+          {l:"FORMA (TSB)",v:(fitCurve.tsb>=0?"+":"")+fitCurve.tsb.toFixed(1),col:fitCurve.tsb>=0?C.green:C.amber},
+        ].map(function(m){return<div key={m.l} style={{background:C.faint,borderRadius:6,padding:"8px 10px",textAlign:"center"}}>
+          <div style={{color:C.grayLight,fontSize:7,fontWeight:700,letterSpacing:.5,marginBottom:3}}>{m.l}</div>
+          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,color:m.col,lineHeight:1}}>{m.v}</div>
+        </div>;})}
+      </div>
+      <div style={{marginTop:8,color:C.grayLight,fontSize:9,lineHeight:1.6}}>
+        {fitCurve.tsb>5?"Forma positiva — bom momento para treino intenso.":fitCurve.tsb<-10?"Fadiga acumulada — considere uma semana de recuperação.":"Equilíbrio entre fitness e fadiga. Mantenha o ritmo."}
+      </div>
+    </div>}
 
     {/* ── Corpo ── */}
     <div style={{marginTop:4}}><BodyView activity={activity} onSaveBodyLog={onSaveBodyLog}/></div>
