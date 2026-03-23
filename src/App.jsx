@@ -510,103 +510,207 @@ function Spinner(){return<div style={{width:20,height:20,border:"2px solid "+C.b
 
 /* ─── SHARE CARD ─────────────────────────────────────────── */
 async function generateShareCard(opts){
-  var W=1080,H=1080;
+  // Pre-load web fonts so canvas renders them correctly
+  try{
+    await Promise.all([
+      document.fonts.load("bold 180px 'Bebas Neue'"),
+      document.fonts.load("bold 82px 'Bebas Neue'"),
+    ]);
+  }catch(e){}
+
+  var W=1080,H=1920; // 9:16 — Stories format
   var canvas=document.createElement("canvas");
   canvas.width=W;canvas.height=H;
   var cx=canvas.getContext("2d");
-  // BG
-  var bg=cx.createLinearGradient(0,0,W,H);
-  bg.addColorStop(0,"#0A0A0A");bg.addColorStop(1,"#181818");
+
+  // Helper: fit text to maxWidth with ellipsis
+  function fit(text,font,maxW){
+    cx.font=font;
+    if(cx.measureText(text).width<=maxW)return text;
+    while(text.length>2&&cx.measureText(text+"…").width>maxW)text=text.slice(0,-1);
+    return text+"…";
+  }
+
+  // Background
+  var bg=cx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,"#0A0A0A");bg.addColorStop(1,"#0D0D0D");
   cx.fillStyle=bg;cx.fillRect(0,0,W,H);
-  // Glow circle
-  var glow=cx.createRadialGradient(980,140,0,980,140,400);
-  glow.addColorStop(0,"rgba(200,0,30,.22)");glow.addColorStop(1,"rgba(200,0,30,0)");
+
+  // Red glow top-right
+  var glow=cx.createRadialGradient(W,0,0,W,0,700);
+  glow.addColorStop(0,"rgba(200,0,30,.32)");glow.addColorStop(1,"rgba(200,0,30,0)");
   cx.fillStyle=glow;cx.fillRect(0,0,W,H);
-  // Accent bar
-  cx.fillStyle="#C8001E";cx.fillRect(0,0,W,10);
-  // ARES
-  cx.font="bold 148px 'Bebas Neue',Arial Black,Impact,sans-serif";
-  cx.fillStyle="#FFFFFF";cx.fillText("ARES",80,200);
-  cx.font="bold 32px Arial,sans-serif";
-  cx.fillStyle="#C8001E";cx.fillText("PERFORMANCE",82,245);
-  // Sport
-  cx.font="52px sans-serif";cx.fillText(opts.sportIcon||"⚡",80,352);
-  cx.font="bold 32px Arial,sans-serif";cx.fillStyle="rgba(255,255,255,.45)";
-  cx.fillText((opts.sportName||"").toUpperCase(),148,348);
-  // Name
-  var nm=(opts.name||"ATLETA").toUpperCase().slice(0,20);
-  cx.font="bold 76px Arial,sans-serif";cx.fillStyle="#FFFFFF";
-  cx.fillText(nm,80,455);
+
+  // Red glow bottom-left
+  var glow2=cx.createRadialGradient(0,H,0,0,H,500);
+  glow2.addColorStop(0,"rgba(200,0,30,.15)");glow2.addColorStop(1,"rgba(200,0,30,0)");
+  cx.fillStyle=glow2;cx.fillRect(0,0,W,H);
+
+  // Top + bottom accent bars
+  cx.fillStyle="#C8001E";cx.fillRect(0,0,W,12);
+  cx.fillStyle="rgba(200,0,30,.6)";cx.fillRect(0,H-8,W,8);
+
+  // Right side accent strip
+  var side=cx.createLinearGradient(0,0,0,H);
+  side.addColorStop(0,"#C8001E");side.addColorStop(0.5,"#C8001E88");side.addColorStop(1,"#C8001E");
+  cx.fillStyle=side;cx.fillRect(W-8,0,8,H);
+
+  // ── ARES logo ──
+  cx.font="bold 180px 'Bebas Neue',Arial Black,Impact,sans-serif";
+  cx.fillStyle="#FFFFFF";cx.fillText("ARES",80,290);
+  cx.font="bold 44px Arial,sans-serif";cx.fillStyle="#C8001E";
+  cx.fillText("PERFORMANCE",84,344);
+
+  // Thin divider
+  cx.strokeStyle="rgba(255,255,255,.07)";cx.lineWidth=1;
+  cx.beginPath();cx.moveTo(80,388);cx.lineTo(W-80,388);cx.stroke();
+
+  // Sport icon + name
+  cx.font="68px sans-serif";cx.fillText(opts.sportIcon||"⚡",80,498);
+  cx.font="bold 38px Arial,sans-serif";cx.fillStyle="rgba(255,255,255,.38)";
+  cx.fillText(fit((opts.sportName||"ESPORTE").toUpperCase(),"bold 38px Arial,sans-serif",W-260),172,490);
+
+  // Athlete name — biggest element
+  var nameFnt="bold 96px Arial,sans-serif";
+  cx.font=nameFnt;cx.fillStyle="#FFFFFF";
+  cx.fillText(fit((opts.name||"ATLETA").toUpperCase(),nameFnt,W-160),80,624);
+
   // Date
-  cx.font="26px Arial,sans-serif";cx.fillStyle="rgba(255,255,255,.32)";
-  cx.fillText(opts.date||new Date().toLocaleDateString("pt-BR"),80,505);
-  // Divider
-  cx.strokeStyle="rgba(255,255,255,.1)";cx.lineWidth=1;
-  cx.beginPath();cx.moveTo(80,548);cx.lineTo(1000,548);cx.stroke();
-  // Stats
+  cx.font="32px Arial,sans-serif";cx.fillStyle="rgba(255,255,255,.26)";
+  cx.fillText(opts.date||new Date().toLocaleDateString("pt-BR",{day:"2-digit",month:"long",year:"numeric"}),80,680);
+
+  // ── Stats block ──
+  cx.strokeStyle="rgba(255,255,255,.06)";cx.lineWidth=1;
+  cx.beginPath();cx.moveTo(80,738);cx.lineTo(W-80,738);cx.stroke();
+
+  cx.font="bold 28px Arial,sans-serif";cx.fillStyle="#C8001E";
+  cx.fillText("SESSÃO REGISTRADA",80,800);
+
   var stats=[
     {v:opts.duration?(opts.duration+"min"):"--",l:"DURAÇÃO",col:"#FFFFFF"},
     {v:opts.rpe?(opts.rpe+"/10"):"--",l:"INTENSIDADE",col:"#C8001E"},
-    {v:opts.xp?("+"+opts.xp+" XP"):"--",l:"EXPERIÊNCIA",col:"#18A84A"},
+    {v:opts.xp?("+"+opts.xp+"xp"):"--",l:"XP",col:"#18A84A"},
   ];
+  var sw=Math.floor((W-192)/3);
   stats.forEach(function(s,i){
-    var x=80+i*320;
-    cx.font="bold 90px 'Bebas Neue',Arial Black,Impact,sans-serif";
-    cx.fillStyle=s.col;cx.fillText(s.v,x,680);
-    cx.font="bold 21px Arial,sans-serif";cx.fillStyle="rgba(255,255,255,.32)";
-    cx.fillText(s.l,x,716);
+    var x=80+i*(sw+16);
+    // Card bg
+    cx.fillStyle="rgba(255,255,255,.04)";cx.fillRect(x,844,sw,200);
+    // Value
+    var vFnt="bold 82px 'Bebas Neue',Arial Black,Impact,sans-serif";
+    cx.font=vFnt;cx.fillStyle=s.col;
+    cx.fillText(fit(s.v,vFnt,sw-24),x+16,960);
+    // Label
+    cx.font="bold 24px Arial,sans-serif";cx.fillStyle="rgba(255,255,255,.28)";
+    cx.fillText(s.l,x+16,1002);
   });
-  // Exercises
+
+  // ── Exercises ──
   var exList=opts.exercises||[];
   if(exList.length>0){
-    cx.font="bold 24px Arial,sans-serif";cx.fillStyle="rgba(255,255,255,.38)";
-    cx.fillText("EXERCÍCIOS",80,790);
-    exList.slice(0,4).forEach(function(ex,i){
-      cx.font="26px Arial,sans-serif";cx.fillStyle="rgba(255,255,255,.62)";
-      var label=typeof ex==="string"?ex:(ex.name||ex.n||"");
-      cx.fillText("· "+label.slice(0,30),80+(i>=2?450:0),834+(i%2)*46);
+    cx.font="bold 30px Arial,sans-serif";cx.fillStyle="rgba(255,255,255,.28)";
+    cx.fillText("EXERCÍCIOS",80,1098);
+    var colW=(W-200)/2;
+    exList.slice(0,6).forEach(function(ex,i){
+      var raw=typeof ex==="string"?ex:(ex.name||ex.n||"");
+      var exFnt="30px Arial,sans-serif";
+      var label=fit("· "+raw,exFnt,colW-20);
+      cx.font=exFnt;cx.fillStyle="rgba(255,255,255,.58)";
+      cx.fillText(label,80+(i%2)*(colW+40),1156+Math.floor(i/2)*58);
     });
   }
-  // Watermark
-  cx.font="22px Arial,sans-serif";cx.fillStyle="rgba(255,255,255,.16)";
-  cx.fillText("aresperformance.app",80,1040);
-  // Corner mark
-  cx.fillStyle="#C8001E";cx.fillRect(1020,1020,60,60);
-  cx.fillStyle="#0A0A0A";cx.fillRect(1028,1028,44,44);
-  cx.fillStyle="#C8001E";cx.fillRect(1036,1036,28,28);
-  return new Promise(function(res){canvas.toBlob(function(b){res(b);},"image/png");});
+
+  // ── Hashtags ──
+  var tagY=exList.length>0?1156+Math.ceil(Math.min(exList.length,6)/2)*58+60:1160;
+  cx.font="bold 28px Arial,sans-serif";cx.fillStyle="rgba(200,0,30,.6)";
+  cx.fillText("#AresPerformance  #Treino  #Performance",80,Math.max(tagY,1420));
+
+  // ── Bottom watermark ──
+  cx.font="24px Arial,sans-serif";cx.fillStyle="rgba(255,255,255,.12)";
+  cx.fillText("ARES PERFORMANCE · aresperformance.app",80,H-96);
+
+  return new Promise(function(res,rej){
+    canvas.toBlob(function(b){b?res(b):rej(new Error("canvas toBlob failed"));},"image/png");
+  });
 }
+
 function ShareModal({opts,onClose}){
   var[imgUrl,sImgUrl]=useState(null);
   var[sharing,sSharing]=useState(false);
+  var[genErr,sGenErr]=useState(false);
+  var canNativeShare=typeof navigator!=="undefined"&&!!navigator.share&&typeof navigator.canShare==="function";
+
   useEffect(function(){
-    generateShareCard(opts).then(function(blob){sImgUrl(URL.createObjectURL(blob));});
-  },[]);
+    var url=null;
+    sImgUrl(null);sGenErr(false);
+    generateShareCard(opts)
+      .then(function(blob){url=URL.createObjectURL(blob);sImgUrl(url);})
+      .catch(function(){sGenErr(true);});
+    return function(){if(url)URL.revokeObjectURL(url);};
+  },[opts]);
+
   async function doShare(){
     sSharing(true);
     try{
       var blob=await generateShareCard(opts);
       var file=new File([blob],"ares-treino.png",{type:"image/png"});
-      if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
-        await navigator.share({title:"Treino · ARES Performance",text:"Mais um treino registrado 💪 #AresPerformance",files:[file]});
+      if(canNativeShare&&navigator.canShare({files:[file]})){
+        await navigator.share({
+          title:"Treino · ARES Performance",
+          text:(opts.type?"Treino de "+opts.type+" registrado!":"Mais um treino registrado!")+" 💪 #AresPerformance",
+          files:[file],
+        });
       }else{
-        var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="ares-treino.png";a.click();
+        var dlUrl=URL.createObjectURL(blob);
+        var a=document.createElement("a");a.href=dlUrl;a.download="ares-treino.png";a.click();
+        setTimeout(function(){URL.revokeObjectURL(dlUrl);},2000);
       }
-    }catch(e){console.error(e);}
+    }catch(e){if(e.name!=="AbortError")console.error("share error:",e);}
     sSharing(false);
   }
-  return<div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.88)",display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
-    <div className="pop" style={{background:C.white,borderRadius:"16px 16px 0 0",padding:"20px 20px calc(20px + "+SAB+")",maxWidth:540,width:"100%"}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+
+  return<div style={{position:"fixed",inset:0,zIndex:300,background:"rgba(0,0,0,.9)",display:"flex",alignItems:"flex-end",justifyContent:"center"}} onClick={function(e){if(e.target===e.currentTarget)onClose();}}>
+    <div className="pop" style={{background:C.white,borderRadius:"16px 16px 0 0",padding:"20px 20px calc(24px + "+SAB+")",maxWidth:540,width:"100%",maxHeight:"92vh",overflowY:"auto"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
         <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,color:C.text,letterSpacing:.5}}>COMPARTILHAR TREINO</div>
-        <button onClick={onClose} style={{background:"none",border:"none",fontSize:18,cursor:"pointer",color:C.gray,lineHeight:1,padding:4}}>✕</button>
+        <button onClick={onClose} style={{background:"none",border:"none",fontSize:18,cursor:"pointer",color:C.gray,padding:4,lineHeight:1}}>✕</button>
       </div>
-      {!imgUrl&&<div style={{height:180,display:"flex",alignItems:"center",justifyContent:"center",background:C.faint,borderRadius:8,marginBottom:14}}><Spinner/></div>}
-      {imgUrl&&<img src={imgUrl} alt="Share card" style={{width:"100%",borderRadius:8,marginBottom:14,boxShadow:sh.md}}/>}
+
+      {/* Preview */}
+      {!imgUrl&&!genErr&&<div style={{height:200,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:C.faint,borderRadius:8,marginBottom:14,gap:8}}>
+        <Spinner/><span style={{color:C.grayLight,fontSize:10}}>Gerando card...</span>
+      </div>}
+      {genErr&&<div style={{background:C.amberBg,border:"1px solid "+C.amber+"30",borderRadius:8,padding:"12px 14px",marginBottom:14,color:C.amber,fontSize:12,fontWeight:600}}>Erro ao gerar imagem. Verifique a conexão e tente novamente.</div>}
+      {imgUrl&&<div style={{position:"relative",marginBottom:14,borderRadius:8,overflow:"hidden",boxShadow:sh.lg}}>
+        <img src={imgUrl} alt="Card de treino ARES" style={{width:"100%",display:"block",maxHeight:360,objectFit:"cover",objectPosition:"top"}}/>
+        <div style={{position:"absolute",bottom:8,right:8,background:"rgba(0,0,0,.65)",borderRadius:4,padding:"3px 8px",fontSize:9,color:"#fff",fontWeight:700}}>STORIES 1080×1920</div>
+      </div>}
+
+      {/* Botões */}
       <div style={{display:"flex",flexDirection:"column",gap:8}}>
-        <Btn onClick={doShare} full disabled={!imgUrl||sharing}>{sharing?"Compartilhando...":"📤  Instagram / Stories / WhatsApp"}</Btn>
-        {imgUrl&&<Btn v="ghost" full onClick={function(){var a=document.createElement("a");a.href=imgUrl;a.download="ares-treino.png";a.click();}}>⬇  Salvar imagem</Btn>}
+        <Btn onClick={doShare} full disabled={!imgUrl||sharing}>
+          {sharing?"Aguarde...":canNativeShare?"📤  Compartilhar (Instagram, WhatsApp…)":"📥  Baixar imagem para compartilhar"}
+        </Btn>
+        {imgUrl&&<Btn v="ghost" full onClick={function(){
+          var a=document.createElement("a");a.href=imgUrl;a.download="ares-treino.png";a.click();
+        }}>⬇  Salvar nas fotos</Btn>}
       </div>
+
+      {/* Instruções Instagram (desktop / quando não tem native share) */}
+      {imgUrl&&!canNativeShare&&<div style={{marginTop:14,background:"#0A0A0A",borderRadius:8,padding:"14px 16px"}}>
+        <div style={{color:"rgba(255,255,255,.4)",fontSize:9,fontWeight:700,letterSpacing:1.5,marginBottom:10}}>COMO POSTAR NO INSTAGRAM STORIES</div>
+        {["Clique em \"Baixar imagem\" acima","Abra o Instagram no celular","Toque em ⊕ (Criar) → Stories","Selecione a foto que baixou","Publique e marque #AresPerformance!"].map(function(step,i){
+          return<div key={i} style={{display:"flex",alignItems:"flex-start",gap:10,marginBottom:8}}>
+            <div style={{width:20,height:20,borderRadius:"50%",background:C.red,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#fff",fontWeight:700,flexShrink:0,marginTop:1}}>{i+1}</div>
+            <div style={{color:"rgba(255,255,255,.65)",fontSize:12,lineHeight:1.5}}>{step}</div>
+          </div>;
+        })}
+      </div>}
+
+      {/* Dica mobile */}
+      {imgUrl&&canNativeShare&&<div style={{marginTop:10,color:C.grayLight,fontSize:10,textAlign:"center",lineHeight:1.6}}>
+        Toque em Compartilhar e escolha <strong>Instagram → Stories</strong> ou <strong>WhatsApp</strong>.
+      </div>}
     </div>
   </div>;
 }
@@ -1132,6 +1236,9 @@ function DashboardTab({activity,user,onGoToPlan,onSaveBodyLog}){
   var weightHistory=bodyLogs.slice(-7).map(function(l){return l.w;});
   var weightDates=bodyLogs.slice(-7).map(function(l){return l.date;});
 
+  /* ── Share session state ── */
+  var[shareSession,sShareSession]=useState(null);
+
   /* ── Strength PRs from session exercise logs ── */
   var[prData,setPrData]=useState(activity?activity.prs||{bench:"",squat:"",deadlift:"",sprint40:"",sprint10:""}:{bench:"",squat:"",deadlift:"",sprint40:"",sprint10:""});
   var[showPREdit,sShowPREdit]=useState(false);
@@ -1388,6 +1495,27 @@ function DashboardTab({activity,user,onGoToPlan,onSaveBodyLog}){
       </div>
     </div>}
 
+    {/* ── Histórico de Sessões ── */}
+    {shareSession&&<ShareModal opts={Object.assign({},shareSession,{sportIcon:sp?sp.icon:"⚡",sportName:sp?sp.name:"Esporte",name:user?user.name:"Atleta"})} onClose={function(){sShareSession(null);}}/>}
+    {sessions.length>0&&<div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"16px",marginBottom:12,marginTop:12}}>
+      <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",marginBottom:10}}>HISTÓRICO DE TREINOS</div>
+      <div style={{display:"flex",flexDirection:"column"}}>
+        {sessions.slice(0,6).map(function(s,i){
+          var rpeCol=!s.rpe?C.grayLight:s.rpe>=8?C.red:s.rpe>=5?C.amber:C.green;
+          return<div key={s.id||i} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 0",borderBottom:i<Math.min(sessions.length-1,5)?"1px solid "+C.border:"none"}}>
+            <div style={{width:3,alignSelf:"stretch",background:rpeCol,borderRadius:2,flexShrink:0,minHeight:36}}/>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontWeight:700,fontSize:13,color:C.text}}>{s.type||"Treino"}</div>
+              <div style={{color:C.grayLight,fontSize:10,marginTop:1}}>{s.date+" · "+(s.duration||60)+"min"+(s.rpe?" · RPE "+s.rpe:"")+(s.exercises&&s.exercises.filter(function(e){return e.name||e.n;}).length?" · "+s.exercises.filter(function(e){return e.name||e.n;}).length+" exs":"")}</div>
+            </div>
+            <button onClick={function(){sShareSession({type:s.type,date:s.date||new Date(s.ts||Date.now()).toLocaleDateString("pt-BR",{day:"2-digit",month:"long",year:"numeric"}),duration:s.duration||60,rpe:s.rpe,xp:XP_SESSION,exercises:s.exercises||[]});}} style={{width:32,height:32,borderRadius:6,background:C.faint,border:"1px solid "+C.border,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}} title="Compartilhar">
+              <svg viewBox="0 0 24 24" fill="none" stroke={C.gray} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" width={14} height={14}><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            </button>
+          </div>;
+        })}
+      </div>
+    </div>}
+
     {/* ── Corpo ── */}
     <div style={{marginTop:4}}><BodyView activity={activity} onSaveBodyLog={onSaveBodyLog}/></div>
   </div>;
@@ -1601,7 +1729,7 @@ function PlanTab({activity,onMarkComplete,onXPGain}){
 }
 
 /* ─── REGISTER TAB ───────────────────────────────────────── */
-function RegisterTab({onSave,activity,onXPGain}){
+function RegisterTab({onSave,activity,user,onXPGain}){
   var sp=activity?SPORTS.find(function(s){return s.id===activity.sport;}):null;
   var[mode,sMode]=useState("structured");
   var[type,sType]=useState("Força"),[dur,sDur]=useState(""),[rpe,sRpe]=useState(7),[notes,sNotes]=useState("");
@@ -1613,20 +1741,21 @@ function RegisterTab({onSave,activity,onXPGain}){
   function parseFreeText(txt){return txt.split("\n").filter(function(l){return l.trim();}).slice(0,12).map(function(l){return{name:l.trim(),sets:"",reps:"",kg:""};});}
   function save(){
     var exercises=mode==="free"?parseFreeText(freeText):exs;
-    var sOpts={name:activity?activity.name:(sp?sp.name:"Atleta"),sportIcon:sp?sp.icon:"⚡",sportName:sp?sp.name:"Esporte",date:new Date().toLocaleDateString("pt-BR"),duration:+dur||60,rpe,xp:XP_SESSION,exercises};
-    sSaved(true);sSavedOpts(sOpts);
+    var athleteName=(user&&user.name?user.name:null)||(sp?sp.name:"Atleta");
+    var sOpts={name:athleteName,sportIcon:sp?sp.icon:"⚡",sportName:sp?sp.name:"Esporte",type,date:new Date().toLocaleDateString("pt-BR",{day:"2-digit",month:"long",year:"numeric"}),duration:+dur||60,rpe,xp:XP_SESSION,exercises};
+    sSaved(true);sSavedOpts(sOpts);sShowShare(false);
     onSave({id:Date.now(),date:new Date().toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"}),type,duration:+dur||60,rpe,notes,exercises,source:mode});
     if(onXPGain)onXPGain(XP_SESSION);
   }
-  function resetForm(){sSaved(false);sSavedOpts(null);sExs([{name:"",sets:"",reps:"",kg:""}]);sNotes("");sDur("");sRpe(7);sFreeText("");}
+  function resetForm(){sSaved(false);sSavedOpts(null);sShowShare(false);sExs([{name:"",sets:"",reps:"",kg:""}]);sNotes("");sDur("");sRpe(7);sFreeText("");}
   if(saved)return<div className="au" style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:360,gap:14,padding:32}}>
     {showShare&&savedOpts&&<ShareModal opts={savedOpts} onClose={function(){sShowShare(false);}}/>}
-    <div style={{width:56,height:56,background:C.green+"14",border:"1px solid "+C.green+"30",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center"}}><Icon name="check" size={26} color={C.green}/></div>
-    <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,color:C.text,letterSpacing:.5}}>SESSÃO REGISTRADA</div>
-    <div style={{color:C.red,fontWeight:700,fontSize:13}}>{"+"+XP_SESSION+" XP"}</div>
-    <div style={{display:"flex",flexDirection:"column",gap:8,width:"100%",maxWidth:260}}>
-      <Btn onClick={function(){sShowShare(true);}} full>📤  Compartilhar no IG</Btn>
-      <Btn onClick={resetForm} v="ghost" full sm>Nova sessão</Btn>
+    <div style={{width:64,height:64,background:C.green+"14",border:"2px solid "+C.green+"40",borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center"}}><Icon name="check" size={30} color={C.green}/></div>
+    <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:24,color:C.text,letterSpacing:.5}}>SESSÃO REGISTRADA!</div>
+    <div style={{color:C.red,fontWeight:800,fontSize:15}}>{"+"+XP_SESSION+" XP"}</div>
+    <div style={{display:"flex",flexDirection:"column",gap:8,width:"100%",maxWidth:280,marginTop:4}}>
+      <Btn onClick={function(){sShowShare(true);}} full>📤  Compartilhar no Instagram</Btn>
+      <Btn onClick={resetForm} v="ghost" full sm>Registrar novo treino</Btn>
     </div>
   </div>;
 
@@ -2158,7 +2287,7 @@ function MainApp({user,initialActivity,onSaveSession,onSavePlanProgress,onSaveAc
         {tab==="home"&&!isCoach&&<DashboardTab activity={ca} user={Object.assign({},user,{plan:userPlan})} onGoToPlan={function(){sTab("plan");}} onSaveBodyLog={saveBodyLog}/>}
         {tab==="home"&&isCoach&&<CoachDashboard user={user} onSelectAthlete={sSelAthlete} selAthlete={selAthlete} onBack={function(){sSelAthlete(null);}}/>}
         {tab==="plan"&&<PlanTab activity={ca} onMarkComplete={markComplete} onXPGain={gainXP}/>}
-        {tab==="reg"&&<RegisterTab onSave={addSession} activity={ca} onXPGain={gainXP}/>}
+        {tab==="reg"&&<RegisterTab onSave={addSession} activity={ca} user={user} onXPGain={gainXP}/>}
         {tab==="xp"&&<AchievementsPanel activity={ca}/>}
         {tab==="me"&&<ProfileTab user={Object.assign({},user,{plan:userPlan})} activity={ca} onLogout={onLogout} onSaveProfile={onSaveProfile} onChangeSport={changeSport}/>}
       </div>
