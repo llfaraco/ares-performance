@@ -10,7 +10,7 @@ var C={
   green:"#18A84A",greenBg:"#18A84A0E",amber:"#D4820A",amberBg:"#D4820A0E",
   blue:"#0066CC",blueBg:"#0066CC0E",indigo:"#5E5CE6",teal:"#64D2FF",tealBg:"#64D2FF10",
 };
-var sh={xs:"0 1px 3px rgba(0,0,0,.05)",sm:"0 2px 10px rgba(0,0,0,.08)",md:"0 6px 18px rgba(0,0,0,.11)",lg:"0 12px 36px rgba(0,0,0,.15)",xl:"0 20px 56px rgba(0,0,0,.20)",red:"0 0 0 1px #C8001E14,0 6px 22px #C8001E22"};
+var sh={xs:"0 1px 2px rgba(0,0,0,.04)",sm:"0 2px 6px rgba(0,0,0,.06)",md:"0 4px 12px rgba(0,0,0,.08)",lg:"0 8px 24px rgba(0,0,0,.10)",red:"0 0 0 1px #C8001E14,0 4px 16px #C8001E14"};
 var SAT="env(safe-area-inset-top,0px)",SAB="env(safe-area-inset-bottom,0px)";
 var CSS=[
   "@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800;900&display=swap');",
@@ -23,11 +23,62 @@ var CSS=[
   "@keyframes popIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}",
   "@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}",
   "@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}",
-  "@keyframes slideDown{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:translateY(0)}}",
-  "@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}",
-  "@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}",
-  ".au{animation:fadeUp .25s ease}.pop{animation:popIn .2s ease}.sld{animation:slideDown .3s ease}.pls{animation:pulse .5s ease}",
+  ".au{animation:fadeUp .25s ease}.pop{animation:popIn .2s ease}",
 ].join("\n");
+
+/* ─── LGPD MODAL ─────────────────────────────────────────── */
+function LGPDModal({onAccept}){
+  return<div style={{position:"fixed",inset:0,zIndex:500,background:"rgba(0,0,0,.7)",display:"flex",alignItems:"flex-end",justifyContent:"center"}}>
+    <div className="pop" style={{background:C.white,borderRadius:"10px 10px 0 0",padding:"24px 20px calc(24px + "+SAB+")",maxWidth:540,width:"100%"}}>
+      <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:20,color:C.text,letterSpacing:.5,marginBottom:10}}>ANTES DE COMEÇAR</div>
+      <div style={{color:C.gray,fontSize:12,lineHeight:1.8,marginBottom:16}}>
+        O <strong>ARES PERFORMANCE</strong> coleta dados de treino, composição corporal e saúde para gerar análises personalizadas.<br/><br/>
+        <strong>Dados coletados:</strong> nome, e-mail, peso, altura, histórico de treinos e métricas de desempenho.<br/>
+        <strong>Finalidade:</strong> personalização do programa e análises de performance atlética.<br/>
+        <strong>Compartilhamento:</strong> nunca compartilhamos seus dados com terceiros sem consentimento.<br/><br/>
+        <span style={{color:C.amber,fontSize:11,fontWeight:600}}>⚠ AVISO MÉDICO/CREF: Este app oferece orientações gerais de treino e NÃO substitui a avaliação de um profissional de Educação Física registrado no CREF. Consulte um profissional antes de iniciar qualquer programa de exercícios.</span>
+      </div>
+      <div style={{display:"flex",gap:8,flexDirection:"column"}}>
+        <Btn onClick={onAccept} full>Aceitar e Continuar →</Btn>
+        <div style={{textAlign:"center"}}>
+          <span style={{color:C.grayLight,fontSize:10}}>Ao continuar você concorda com nossa </span>
+          <span style={{color:C.red,fontSize:10,cursor:"pointer",fontWeight:600}} onClick={function(){window.open("https://aresperformance.app/privacidade","_blank");}}>Política de Privacidade</span>
+          <span style={{color:C.grayLight,fontSize:10}}> e </span>
+          <span style={{color:C.red,fontSize:10,cursor:"pointer",fontWeight:600}} onClick={function(){window.open("https://aresperformance.app/termos","_blank");}}>Termos de Uso</span>
+        </div>
+      </div>
+    </div>
+  </div>;
+}
+
+/* ─── PWA META INJECTOR ───────────────────────────────────── */
+function usePWA(){
+  useEffect(function(){
+    // Manifest
+    if(!document.querySelector("link[rel='manifest']")){
+      var mData={name:"ARES Performance",short_name:"ARES",start_url:"/",display:"standalone",background_color:"#F4F4F4",theme_color:"#C8001E",icons:[{src:"/icon-192.png",sizes:"192x192",type:"image/png"},{src:"/icon-512.png",sizes:"512x512",type:"image/png"}]};
+      var blob=new Blob([JSON.stringify(mData)],{type:"application/json"});
+      var url=URL.createObjectURL(blob);
+      var link=document.createElement("link");link.rel="manifest";link.href=url;
+      document.head.appendChild(link);
+    }
+    // Theme color
+    if(!document.querySelector("meta[name='theme-color']")){
+      var meta=document.createElement("meta");meta.name="theme-color";meta.content="#C8001E";
+      document.head.appendChild(meta);
+    }
+    // Apple mobile web app
+    ["apple-mobile-web-app-capable","mobile-web-app-capable"].forEach(function(n){
+      if(!document.querySelector("meta[name='"+n+"']")){
+        var m=document.createElement("meta");m.name=n;m.content="yes";document.head.appendChild(m);
+      }
+    });
+    if(!document.querySelector("meta[name='apple-mobile-web-app-status-bar-style']")){
+      var m2=document.createElement("meta");m2.name="apple-mobile-web-app-status-bar-style";m2.content="black-translucent";document.head.appendChild(m2);
+    }
+  },[]);
+}
+
 
 /* ─── LEVELS ─────────────────────────────────────────────── */
 var LEVELS=[
@@ -42,59 +93,6 @@ function getNextLevel(cur){return LEVELS.find(function(l){return l.id===(cur?cur
 var XP_SESSION=50,XP_WEEK=200;
 var ADMIN_KEYS=["lucas","admin","teste","ares"];
 function getEffectivePlan(u){if(!u)return"free";var n=(u.name||"").toLowerCase(),e=(u.email||"").toLowerCase();return ADMIN_KEYS.some(function(k){return n.includes(k)||e.includes(k);})?"admin":u.plan||"free";}
-
-/* ─── BADGES / CONQUISTAS ─────────────────────────────────── */
-var BADGES=[
-  {id:"first_session",icon:"🚀",name:"Primeira Missão",desc:"1ª sessão registrada",color:"#FF9500"},
-  {id:"sessions_7",icon:"🔥",name:"Em Chamas",desc:"7 sessões registradas",color:C.red},
-  {id:"sessions_30",icon:"💪",name:"Dedicado",desc:"30 sessões completas",color:C.blue},
-  {id:"sessions_100",icon:"👑",name:"Lenda",desc:"100 sessões completas",color:"#FFD700"},
-  {id:"perfect_week",icon:"⚡",name:"Semana Perfeita",desc:"100% de aderência em 1 semana",color:C.amber},
-  {id:"cycle_complete",icon:"🏆",name:"Ciclo Completo",desc:"12 semanas concluídas",color:"#FFD700"},
-  {id:"level_up",icon:"📈",name:"Evolução",desc:"Suba do nível Iniciante",color:C.green},
-  {id:"level_elite",icon:"💎",name:"Elite",desc:"Alcance o nível Elite",color:"#9B59B6"},
-  {id:"streak_4",icon:"🔗",name:"4 Semanas",desc:"4 semanas seguidas com treino",color:C.indigo},
-  {id:"xp_500",icon:"⭐",name:"500 XP",desc:"Acumule 500 pontos de XP",color:C.amber},
-  {id:"xp_2000",icon:"🌟",name:"2000 XP",desc:"Acumule 2000 pontos de XP",color:"#FFD700"},
-  {id:"warrior",icon:"⚔️",name:"Guerreiro",desc:"50 sessões registradas",color:C.indigo},
-];
-function badgeEarned(b,activity){
-  if(!activity)return false;
-  var sess=(activity.sessions||[]).length,xp=activity.xp||0,plan=activity.plan;
-  switch(b.id){
-    case"first_session":return sess>=1;
-    case"sessions_7":return sess>=7;
-    case"sessions_30":return sess>=30;
-    case"sessions_100":return sess>=100;
-    case"warrior":return sess>=50;
-    case"perfect_week":return plan?plan.weeks.some(function(w){return w.sessions.length>0&&w.sessions.every(function(s){return s.completed;});}):false;
-    case"cycle_complete":return plan?plan.weeks.every(function(w){return w.sessions.length===0||w.sessions.every(function(s){return s.completed;});}):false;
-    case"level_up":return xp>=500;
-    case"level_elite":return getLevel(xp).id==="elite";
-    case"streak_4":{if(!plan)return false;var sk=0,mx=0;plan.weeks.forEach(function(w){if(w.sessions.filter(function(s){return s.completed;}).length>0){sk++;if(sk>mx)mx=sk;}else sk=0;});return mx>=4;}
-    case"xp_500":return xp>=500;
-    case"xp_2000":return xp>=2000;
-    default:return false;
-  }
-}
-function computeBadges(activity){return BADGES.map(function(b){return Object.assign({},b,{earned:badgeEarned(b,activity)});});}
-
-/* ─── WEEKLY CHALLENGES ───────────────────────────────────── */
-function getWeekChallenges(activity){
-  var sessions=activity?activity.sessions||[]:[];
-  var plan=activity?activity.plan:null;
-  var cw=plan?plan.weeks[(plan.currentWeek||1)-1]:null;
-  var weekDone=cw?cw.sessions.filter(function(s){return s.completed;}).length:0;
-  var weekTotal=Math.max(cw?cw.sessions.length:4,1);
-  var recent=sessions.slice(0,7);
-  var avgRpe=recent.length?parseFloat((recent.reduce(function(a,s){return a+(+s.rpe||7);},0)/recent.length).toFixed(1)):0;
-  var totalVol=recent.reduce(function(a,s){return a+(s.exercises?s.exercises.reduce(function(b,e){return b+(parseInt(e.sets||0)*parseInt(e.reps||0)*parseInt(e.kg||0));},0):0);},0);
-  return[
-    {id:"c_sess",icon:"🎯",name:"Complete "+weekTotal+" sessões",desc:"Semana 100% no plano",goal:weekTotal,current:weekDone,unit:"sessões",color:C.red,xp:200},
-    {id:"c_rpe",icon:"💥",name:"RPE médio ≥ 7",desc:"Intensidade alta esta semana",goal:7,current:avgRpe,unit:"/10",color:C.amber,xp:100},
-    {id:"c_vol",icon:"🏋️",name:"10.000 kg volume",desc:"Volume semanal acumulado",goal:10000,current:Math.min(totalVol,10000),unit:"kg",color:C.blue,xp:150},
-  ];
-}
 
 /* ─── SPORTS ─────────────────────────────────────────────── */
 var SPORTS=[
@@ -581,124 +579,6 @@ function XPBar({xp}){
   </div>;
 }
 
-/* ─── CHALLENGES CARD ─────────────────────────────────────── */
-function ChallengesCard({activity}){
-  var challenges=getWeekChallenges(activity);
-  var doneCount=challenges.filter(function(c){return c.current>=c.goal;}).length;
-  var bonusXP=challenges.reduce(function(a,c){return a+(c.current>=c.goal?c.xp:0);},0);
-  return<div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"14px 16px",marginBottom:12}}>
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
-      <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase"}}>DESAFIOS DA SEMANA</div>
-      <div style={{display:"flex",alignItems:"center",gap:5}}>
-        {bonusXP>0&&<span style={{background:C.green+"14",color:C.green,fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:4,border:"1px solid "+C.green+"22"}}>{"+"+bonusXP+" XP"}</span>}
-        <span style={{background:doneCount===challenges.length?C.green+"14":C.amber+"14",color:doneCount===challenges.length?C.green:C.amber,fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:4}}>{doneCount+"/"+challenges.length}</span>
-      </div>
-    </div>
-    <div style={{display:"flex",flexDirection:"column",gap:12}}>
-      {challenges.map(function(ch){
-        var pct=ch.goal>0?Math.min(100,Math.round((ch.current/ch.goal)*100)):0;
-        var done=pct>=100;
-        return<div key={ch.id}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
-            <div style={{display:"flex",alignItems:"center",gap:8}}>
-              <span style={{fontSize:15}}>{ch.icon}</span>
-              <div>
-                <div style={{fontWeight:700,fontSize:12,color:done?C.green:C.text}}>{ch.name}{done&&<span style={{fontSize:10,marginLeft:4}}>✓</span>}</div>
-                <div style={{color:C.grayLight,fontSize:10}}>{ch.desc}</div>
-              </div>
-            </div>
-            <div style={{textAlign:"right",flexShrink:0,minWidth:44}}>
-              <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:15,color:done?C.green:ch.color,lineHeight:1}}>
-                {typeof ch.current==="number"&&ch.current%1!==0?ch.current.toFixed(1):Math.min(ch.current,ch.goal)}
-                <span style={{fontSize:8,color:C.grayLight,fontFamily:"Inter,sans-serif",fontWeight:400}}>{"/"+(ch.goal)}</span>
-              </div>
-              <div style={{color:C.grayLight,fontSize:8}}>{ch.unit}</div>
-            </div>
-          </div>
-          <div style={{background:C.faint,borderRadius:99,height:5,overflow:"hidden"}}>
-            <div style={{height:"100%",width:pct+"%",background:done?"linear-gradient(90deg,"+C.green+",#28d463)":"linear-gradient(90deg,"+ch.color+"99,"+ch.color+")",borderRadius:99,transition:"width .9s ease"}}/>
-          </div>
-          {done&&<div style={{marginTop:3,color:C.green,fontSize:9,fontWeight:700}}>{"🎉 +"+ch.xp+" XP ganhos!"}</div>}
-        </div>;
-      })}
-    </div>
-  </div>;
-}
-
-/* ─── BADGES VIEW ─────────────────────────────────────────── */
-function BadgesView({activity,compact=false}){
-  var badges=computeBadges(activity);
-  var earned=badges.filter(function(b){return b.earned;});
-  var locked=badges.filter(function(b){return!b.earned;});
-  if(compact)return<div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"14px 16px",marginBottom:12}}>
-    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-      <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase"}}>CONQUISTAS</div>
-      <span style={{background:C.red+"14",color:C.red,fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:4}}>{earned.length+"/"+badges.length}</span>
-    </div>
-    <div style={{display:"flex",gap:7,flexWrap:"wrap",alignItems:"center"}}>
-      {earned.length===0
-        ?<div style={{color:C.grayLight,fontSize:11,paddingBottom:2}}>Complete treinos para desbloquear 🎯</div>
-        :earned.slice(0,8).map(function(b){return<div key={b.id} title={b.name+": "+b.desc} style={{width:38,height:38,borderRadius:8,background:b.color+"18",border:"1px solid "+b.color+"33",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>{b.icon}</div>;})}
-      {earned.length<8&&locked.slice(0,6-Math.min(earned.length,6)).map(function(b){return<div key={b.id} style={{width:38,height:38,borderRadius:8,background:C.faint,border:"1px solid "+C.border,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,filter:"grayscale(1)",opacity:.3}}>{b.icon}</div>;})}
-    </div>
-  </div>;
-  return<div style={{display:"flex",flexDirection:"column",gap:14}}>
-    {earned.length>0&&<div>
-      <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",marginBottom:10}}>{"DESBLOQUEADAS ("+earned.length+")"}</div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
-        {earned.map(function(b){return<div key={b.id} className="au" style={{background:b.color+"0F",border:"1px solid "+b.color+"28",borderRadius:8,padding:"14px 8px",textAlign:"center"}}>
-          <div className="pls" style={{fontSize:30,marginBottom:5}}>{b.icon}</div>
-          <div style={{fontWeight:700,fontSize:10,color:C.text,lineHeight:1.3}}>{b.name}</div>
-          <div style={{color:C.grayLight,fontSize:8,marginTop:3,lineHeight:1.4}}>{b.desc}</div>
-        </div>;})}
-      </div>
-    </div>}
-    {locked.length>0&&<div>
-      <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",marginBottom:10}}>{"BLOQUEADAS ("+locked.length+")"}</div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
-        {locked.map(function(b){return<div key={b.id} style={{background:C.faint,border:"1px solid "+C.border,borderRadius:8,padding:"14px 8px",textAlign:"center",opacity:.5}}>
-          <div style={{fontSize:30,marginBottom:5,filter:"grayscale(1)"}}>{b.icon}</div>
-          <div style={{fontWeight:700,fontSize:10,color:C.gray,lineHeight:1.3}}>{b.name}</div>
-          <div style={{color:C.grayLight,fontSize:8,marginTop:3,lineHeight:1.4}}>{b.desc}</div>
-        </div>;})}
-      </div>
-    </div>}
-  </div>;
-}
-
-/* ─── LEADERBOARD VIEW ────────────────────────────────────── */
-function LeaderboardView({user,activity}){
-  var sp=activity?SPORTS.find(function(s){return s.id===activity.sport;}):null;
-  var myXp=activity?activity.xp||0:0;
-  var myName=user?user.name:"Você";
-  var mock=[
-    {name:"Lucas M.",sport:"Flag Football",xp:4820,avatar:"L"},
-    {name:"Rafael S.",sport:"MMA",xp:3940,avatar:"R"},
-    {name:"Gabriel T.",sport:"Musculação",xp:3120,avatar:"G"},
-    {name:"Pedro A.",sport:"CrossFit",xp:2840,avatar:"P"},
-    {name:"Thiago B.",sport:"Futebol",xp:1920,avatar:"T"},
-  ];
-  var all=[{name:myName,sport:sp?sp.name:"—",xp:myXp,avatar:myName.charAt(0).toUpperCase(),isMe:true}].concat(mock);
-  all.sort(function(a,b){return b.xp-a.xp;});
-  var medals=["🥇","🥈","🥉"];
-  return<div style={{display:"flex",flexDirection:"column",gap:6}}>
-    <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",marginBottom:4}}>RANKING GLOBAL</div>
-    {all.map(function(a,i){return<div key={i} className={a.isMe?"au":""} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",background:a.isMe?C.red+"0A":C.white,borderRadius:8,border:"1px solid "+(a.isMe?C.red+"33":C.border)}}>
-      <div style={{width:24,textAlign:"center",fontSize:i<3?16:10,color:i>=3?C.grayLight:""}}>{i<3?medals[i]:"#"+(i+1)}</div>
-      <div style={{width:34,height:34,borderRadius:7,background:a.isMe?C.red:C.faint,display:"flex",alignItems:"center",justifyContent:"center",color:a.isMe?"#fff":C.gray,fontFamily:"'Bebas Neue',sans-serif",fontSize:14,border:"1px solid "+(a.isMe?C.redDk:C.border),flexShrink:0}}>{a.avatar}</div>
-      <div style={{flex:1,minWidth:0}}>
-        <div style={{fontWeight:700,fontSize:12,color:a.isMe?C.red:C.text}}>{a.name}{a.isMe&&<span style={{fontSize:9,background:C.red+"14",color:C.red,padding:"0 5px",borderRadius:3,marginLeft:5}}>você</span>}</div>
-        <div style={{color:C.grayLight,fontSize:10,marginTop:1}}>{a.sport}</div>
-      </div>
-      <div style={{textAlign:"right"}}>
-        <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:17,color:a.isMe?C.red:C.text,lineHeight:1}}>{a.xp.toLocaleString()}</div>
-        <div style={{color:C.grayLight,fontSize:8}}>XP</div>
-      </div>
-    </div>;})}
-    <div style={{textAlign:"center",marginTop:6,color:C.grayLight,fontSize:10,padding:"8px",background:C.faint,borderRadius:6}}>Baseado em XP acumulado · Atualizado semanalmente</div>
-  </div>;
-}
-
 /* ─── WORKOUT MODAL (BUG FIXED) ──────────────────────────── */
 function WorkoutModal({session,week,onClose,onComplete}){
   var[tab,sTab]=useState("main");
@@ -790,7 +670,7 @@ function LoginScreen(){
   var[mode,sMode]=useState("welcome");
   var[email,sEmail]=useState(""),[ pass,sPass]=useState(""),[ name,sName]=useState("");
   var[ld,sLd]=useState(false),[err,sErr]=useState("");
-  async function oAuth(p){sLd(true);sErr("");var{error}=await supabase.auth.signInWithOAuth({provider:p,options:{redirectTo:window.location.origin}});if(error){sErr(error.message);sLd(false);}}
+  async function oAuth(p){sLd(true);sErr("");var{error}=await supabase.auth.signInWithOAuth({provider:p,options:{redirectTo:window.location.origin}});if(error){sErr(error.message);sLd(false);}/* mock: state update handled by listener */}
   async function signUp(){if(!email||!pass||!name){sErr("Preencha todos os campos.");return;}sLd(true);var{error}=await supabase.auth.signUp({email,password:pass,options:{data:{name}}});if(error){sErr(error.message);}else{sErr("✓ Verifique seu e-mail!");}sLd(false);}
   async function signIn(){if(!email||!pass){sErr("Preencha todos os campos.");return;}sLd(true);var{error}=await supabase.auth.signInWithPassword({email,password:pass});if(error){sErr("E-mail ou senha incorretos.");sLd(false);}}
   if(mode==="welcome")return<div style={{minHeight:"100vh",background:C.dark,display:"flex",flexDirection:"column",overflow:"hidden",position:"relative"}}>
@@ -842,73 +722,151 @@ function LoginScreen(){
 
 /* ─── ONBOARD ─────────────────────────────────────────────── */
 function OnboardScreen({user,onComplete}){
-  var[step,sStep]=useState(0),[age,sAge]=useState(""),[sex,sSex]=useState("Masculino"),[wt,sWt]=useState(""),[ht,sHt]=useState(""),[lv,sLv]=useState("Amador");
-  var[cat,sCat]=useState("Todos"),[sport,setSport]=useState(null),[pos,sPos]=useState(""),[goal,sGoal]=useState(GOALS[0]),[days,sDays]=useState("4"),[mins,sMins]=useState("60");
+  var[step,sStep]=useState(0);
+  var[age,sAge]=useState(""),[sex,sSex]=useState("Masculino"),[wt,sWt]=useState(""),[ht,sHt]=useState(""),[lv,sLv]=useState("Amador");
+  var[cat,sCat]=useState("Todos"),[sport,setSport]=useState(null),[pos,sPos]=useState("");
+  var[goal,sGoal]=useState(GOALS[0]),[days,sDays]=useState("4"),[mins,sMins]=useState("60");
+  var[lgpdOk,sLgpdOk]=useState(function(){try{return!!localStorage.getItem("ares_lgpd");}catch(e){return false;}});
+
   function pickSport(id){setSport(id);var s=SPORTS.find(function(s){return s.id===id;});if(s)sPos(s.positions[0]);}
+  function acceptLGPD(){try{localStorage.setItem("ares_lgpd","1");}catch(e){}sLgpdOk(true);}
+
   var filtered=cat==="Todos"?SPORTS:SPORTS.filter(function(s){return s.cat===cat;});
   var sp=SPORTS.find(function(s){return s.id===sport;});
+  var STEPS=["BOAS-VINDAS","SEU PERFIL","SEU ESPORTE","OBJETIVOS"];
+  var totalSteps=STEPS.length;
+
+  if(!lgpdOk)return<LGPDModal onAccept={acceptLGPD}/>;
+
   return<div style={{minHeight:"100vh",background:C.bg}}>
+    {/* Header */}
     <div style={{background:C.white,borderBottom:"1px solid "+C.border,padding:"12px 20px",display:"flex",justifyContent:"space-between",alignItems:"center",position:"sticky",top:0,zIndex:10}}>
-      <AresLogo size={26}/>
-      <div style={{display:"flex",gap:4,alignItems:"center"}}>
-        {[0,1,2].map(function(i){return<div key={i} style={{width:i===step?28:8,height:4,borderRadius:99,background:i<step?C.green:i===step?C.red:C.border,transition:"all .3s"}}/>;})}</div>
+      <AresLogo size={24}/>
+      <div style={{display:"flex",gap:3,alignItems:"center"}}>
+        {STEPS.map(function(_,i){return<div key={i} style={{width:i===step?24:6,height:3,borderRadius:2,background:i<step?C.green:i===step?C.red:C.border,transition:"all .25s"}}/>;})}</div>
     </div>
-    <div style={{maxWidth:600,margin:"0 auto",padding:"24px 16px"}} className="au">
-      <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:26,color:C.text,letterSpacing:1,marginBottom:20}}>{["SEU PERFIL","SEU ESPORTE","OBJETIVOS"][step]}</div>
+
+    <div style={{maxWidth:560,margin:"0 auto",padding:"20px 16px"}} className="au">
+      <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",marginBottom:4}}>{"Passo "+(step+1)+" de "+totalSteps}</div>
+      <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:24,color:C.text,letterSpacing:.5,marginBottom:16}}>{STEPS[step]}</div>
+
+      {/* ── STEP 0: Welcome ── */}
       {step===0&&<div style={{display:"flex",flexDirection:"column",gap:14}}>
-        <Card style={{padding:22}}>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
-            <Inp label="Idade" value={age} onChange={sAge} type="number" placeholder="24" hint="Obrigatório"/>
-            <Inp label="Sexo" value={sex} onChange={sSex} options={["Masculino","Feminino","Outro"].map(function(s){return{v:s,l:s};})}/>
-            <Inp label="Peso (kg)" value={wt} onChange={sWt} type="number" placeholder="78"/>
-            <Inp label="Altura (cm)" value={ht} onChange={sHt} type="number" placeholder="177"/>
-            <div style={{gridColumn:"1/-1"}}><Inp label="Nível atlético" value={lv} onChange={sLv} options={["Iniciante","Amador","Semi-profissional","Profissional"].map(function(l){return{v:l,l:l};})}/></div>
-          </div>
-        </Card>
-        <div style={{display:"flex",justifyContent:"flex-end"}}><Btn onClick={function(){sStep(1);}} disabled={!age}>Próximo →</Btn></div>
-      </div>}
-      {step===1&&<div style={{display:"flex",flexDirection:"column",gap:12}}>
-        <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>{CATS.map(function(c){return<button key={c} onClick={function(){sCat(c);}} style={{padding:"5px 12px",borderRadius:5,border:"1px solid "+(cat===c?C.red:C.border),background:cat===c?C.redLight:C.white,color:cat===c?C.red:C.gray,cursor:"pointer",fontSize:11,fontWeight:600,minHeight:32}}>{c}</button>;})}</div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(120px,1fr))",gap:8,maxHeight:340,overflowY:"auto"}}>
-          {filtered.map(function(s){return<Card key={s.id} hover onClick={function(){pickSport(s.id);}} red={sport===s.id} style={{padding:"14px 10px",cursor:"pointer"}}>
-            <div style={{fontSize:20,marginBottom:6}}>{s.icon}</div>
-            <div style={{color:C.text,fontWeight:700,fontSize:12,lineHeight:1.3}}>{s.name}</div>
-            <div style={{color:C.grayLight,fontSize:9,marginTop:2}}>{s.cat}</div>
-            {sport===s.id&&<div style={{position:"absolute",top:6,right:6}}><Tag size={9}>✓</Tag></div>}
-          </Card>;})}
+        <div style={{background:C.dark,borderRadius:8,padding:"20px",textAlign:"center"}}>
+          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:42,color:C.red,letterSpacing:3,lineHeight:1}}>ARES</div>
+          <div style={{color:"#ffffff55",fontSize:10,letterSpacing:3,marginTop:2}}>PERFORMANCE</div>
+          <div style={{color:"#ffffffbb",fontSize:13,marginTop:14,lineHeight:1.7}}>Seu programa esportivo personalizado com periodização científica e análise de IA.</div>
         </div>
-        {sp&&<Card style={{padding:16}}>
-          <div style={{display:"flex",gap:10,alignItems:"center",marginBottom:10}}>
-            <span style={{fontSize:22}}>{sp.icon}</span>
-            <div><div style={{fontWeight:700,fontSize:14,color:C.text}}>{sp.name}</div><Tag color={C.blue}>{sp.cat}</Tag></div>
-          </div>
-          <Inp label="Posição / Função" value={pos} onChange={sPos} options={sp.positions.map(function(p){return{v:p,l:p};})}/>
-        </Card>}
-        <div style={{display:"flex",justifyContent:"space-between"}}><Btn onClick={function(){sStep(0);}} v="ghost">← Voltar</Btn><Btn onClick={function(){sStep(2);}} disabled={!sport||!pos}>Próximo →</Btn></div>
+        {[
+          {icon:"⚡",title:"Plano periodizado 12 semanas",desc:"Baseado no seu esporte, posição e disponibilidade"},
+          {icon:"📊",title:"Dashboard de performance real",desc:"ACWR, carga semanal, frequência e registros de força"},
+          {icon:"🤖",title:"Inteligência artificial ARES",desc:"Análise de carga, fadiga e prescrições personalizadas"},
+          {icon:"🏅",title:"21 esportes e modalidades",desc:"Flag, musculação, corrida, MMA, futebol e muito mais"},
+        ].map(function(f){return<div key={f.title} style={{display:"flex",gap:12,alignItems:"flex-start",background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"12px 14px"}}>
+          <div style={{fontSize:20,flexShrink:0,marginTop:1}}>{f.icon}</div>
+          <div><div style={{fontWeight:700,fontSize:13,color:C.text}}>{f.title}</div><div style={{color:C.grayLight,fontSize:11,marginTop:2}}>{f.desc}</div></div>
+        </div>;})}
+        <Btn onClick={function(){sStep(1);}} full>Começar configuração →</Btn>
+        <div style={{textAlign:"center",color:C.grayLight,fontSize:10}}>Leva menos de 2 minutos ✓</div>
       </div>}
-      {step===2&&<div style={{display:"flex",flexDirection:"column",gap:12}}>
-        <Card style={{padding:20}}><SL>Objetivo Principal</SL>
-          <div style={{display:"flex",flexDirection:"column",gap:7}}>
-            {GOALS.map(function(g){return<div key={g} onClick={function(){sGoal(g);}} style={{padding:"12px 14px",borderRadius:8,border:"1px solid "+(goal===g?C.red:C.border),background:goal===g?C.redLight:C.white,cursor:"pointer",display:"flex",alignItems:"center",gap:10,minHeight:44}}>
-              <div style={{width:15,height:15,borderRadius:"50%",border:"2px solid "+(goal===g?C.red:C.border),background:goal===g?C.red:"transparent",flexShrink:0}}/>
-              <span style={{fontSize:13,color:goal===g?C.red:C.text,fontWeight:goal===g?600:400}}>{g}</span>
+
+      {/* ── STEP 1: Perfil ── */}
+      {step===1&&<div style={{display:"flex",flexDirection:"column",gap:12}}>
+        <div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"16px"}}>
+          <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",marginBottom:12}}>DADOS FÍSICOS</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+            <Inp label="Idade *" value={age} onChange={sAge} type="number" placeholder="24" hint="Obrigatório para cálculos"/>
+            <Inp label="Sexo" value={sex} onChange={sSex} options={["Masculino","Feminino","Outro"].map(function(s){return{v:s,l:s};})}/>
+            <Inp label="Peso (kg)" value={wt} onChange={sWt} type="number" placeholder="78" hint="Para prescrição nutricional"/>
+            <Inp label="Altura (cm)" value={ht} onChange={sHt} type="number" placeholder="177"/>
+            <div style={{gridColumn:"1/-1"}}>
+              <Inp label="Nível atlético" value={lv} onChange={sLv} options={["Iniciante","Amador","Semi-profissional","Profissional"].map(function(l){return{v:l,l:l};})}/>
+              <div style={{color:C.grayLight,fontSize:9,marginTop:4}}>Isso ajusta a intensidade e volume do programa</div>
+            </div>
+          </div>
+        </div>
+        <div style={{display:"flex",justifyContent:"space-between",gap:8}}>
+          <Btn onClick={function(){sStep(0);}} v="ghost">← Voltar</Btn>
+          <Btn onClick={function(){sStep(2);}} disabled={!age}>Próximo: Esporte →</Btn>
+        </div>
+      </div>}
+
+      {/* ── STEP 2: Esporte ── */}
+      {step===2&&<div style={{display:"flex",flexDirection:"column",gap:10}}>
+        {/* Selected sport hero */}
+        {sp&&<div style={{background:C.red,borderRadius:8,padding:"14px 16px",display:"flex",alignItems:"center",gap:12}}>
+          <div style={{fontSize:28}}>{sp.icon}</div>
+          <div>
+            <div style={{color:"#fff",fontWeight:700,fontSize:15}}>{sp.name}</div>
+            <div style={{color:"rgba(255,255,255,.6)",fontSize:11,marginTop:1}}>{sp.cat+" · "+pos}</div>
+          </div>
+          <button onClick={function(){setSport(null);sPos("");}} style={{marginLeft:"auto",background:"rgba(255,255,255,.2)",border:"none",borderRadius:4,color:"#fff",fontSize:10,fontWeight:700,padding:"4px 8px",cursor:"pointer"}}>Trocar</button>
+        </div>}
+        {/* Category filter */}
+        <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+          {CATS.map(function(cc){return<button key={cc} onClick={function(){sCat(cc);}} style={{padding:"4px 10px",borderRadius:4,border:"1px solid "+(cat===cc?C.red:C.border),background:cat===cc?C.red:"transparent",color:cat===cc?"#fff":C.gray,cursor:"pointer",fontSize:10,fontWeight:600,minHeight:28,transition:"all .12s"}}>{cc}</button>;})}</div>
+        {/* Sport grid */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(105px,1fr))",gap:6,maxHeight:300,overflowY:"auto"}}>
+          {filtered.map(function(s){var sel=sport===s.id;return<div key={s.id} onClick={function(){pickSport(s.id);}} style={{background:sel?C.red:C.white,border:"1px solid "+(sel?C.red:C.border),borderRadius:8,padding:"12px 8px",cursor:"pointer",textAlign:"center",transition:"all .12s",position:"relative"}}>
+            <div style={{fontSize:18,marginBottom:4}}>{s.icon}</div>
+            <div style={{color:sel?"#fff":C.text,fontWeight:700,fontSize:11,lineHeight:1.3}}>{s.name}</div>
+            {sel&&<div style={{position:"absolute",top:4,right:4,width:7,height:7,borderRadius:99,background:"#fff"}}/>}
+          </div>;})}
+        </div>
+        {/* Position picker */}
+        {sp&&<div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"12px 14px"}}>
+          <Inp label={"Posição em "+sp.name} value={pos} onChange={sPos} options={sp.positions.map(function(p){return{v:p,l:p};})}/>
+        </div>}
+        <div style={{display:"flex",justifyContent:"space-between",gap:8}}>
+          <Btn onClick={function(){sStep(1);}} v="ghost">← Voltar</Btn>
+          <Btn onClick={function(){sStep(3);}} disabled={!sport||!pos}>Próximo: Objetivos →</Btn>
+        </div>
+      </div>}
+
+      {/* ── STEP 3: Objetivos ── */}
+      {step===3&&<div style={{display:"flex",flexDirection:"column",gap:10}}>
+        <div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"14px 16px"}}>
+          <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",marginBottom:10}}>OBJETIVO PRINCIPAL</div>
+          <div style={{display:"flex",flexDirection:"column",gap:5}}>
+            {GOALS.map(function(g){return<div key={g} onClick={function(){sGoal(g);}} style={{padding:"11px 13px",borderRadius:6,border:"1px solid "+(goal===g?C.red:C.border),background:goal===g?C.red:"transparent",cursor:"pointer",display:"flex",alignItems:"center",gap:10,minHeight:42,transition:"all .12s"}}>
+              <div style={{width:13,height:13,borderRadius:99,border:"2px solid "+(goal===g?"#fff":C.border),background:"transparent",flexShrink:0}}/>
+              <span style={{fontSize:13,color:goal===g?"#fff":C.text,fontWeight:goal===g?600:400}}>{g}</span>
             </div>;})}
           </div>
-        </Card>
-        <Card style={{padding:20}}><SL>Disponibilidade</SL>
+        </div>
+        <div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"14px 16px"}}>
+          <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",marginBottom:12}}>DISPONIBILIDADE</div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
             <div>
-              <div style={{color:C.gray,fontSize:11,fontWeight:600,marginBottom:8}}>{"Dias/sem: "}<span style={{color:C.red,fontSize:20,fontFamily:"'Bebas Neue',sans-serif"}}>{days+"×"}</span></div>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+                <span style={{color:C.gray,fontSize:10,fontWeight:600}}>Dias/semana</span>
+                <span style={{color:C.red,fontFamily:"'Bebas Neue',sans-serif",fontSize:20,lineHeight:1}}>{days+"×"}</span>
+              </div>
               <input type="range" min={3} max={6} value={days} onChange={function(e){sDays(e.target.value);}} style={{width:"100%",accentColor:C.red}}/>
+              <div style={{display:"flex",justifyContent:"space-between",marginTop:2}}><span style={{color:C.grayLight,fontSize:8}}>3×</span><span style={{color:C.grayLight,fontSize:8}}>6×</span></div>
             </div>
             <div>
-              <div style={{color:C.gray,fontSize:11,fontWeight:600,marginBottom:8}}>{"Tempo/sessão: "}<span style={{color:C.red,fontSize:20,fontFamily:"'Bebas Neue',sans-serif"}}>{mins+"min"}</span></div>
+              <div style={{display:"flex",justifyContent:"space-between",marginBottom:6}}>
+                <span style={{color:C.gray,fontSize:10,fontWeight:600}}>Por sessão</span>
+                <span style={{color:C.red,fontFamily:"'Bebas Neue',sans-serif",fontSize:20,lineHeight:1}}>{mins+"min"}</span>
+              </div>
               <input type="range" min={30} max={120} step={15} value={mins} onChange={function(e){sMins(e.target.value);}} style={{width:"100%",accentColor:C.red}}/>
+              <div style={{display:"flex",justifyContent:"space-between",marginTop:2}}><span style={{color:C.grayLight,fontSize:8}}>30</span><span style={{color:C.grayLight,fontSize:8}}>120</span></div>
             </div>
           </div>
-        </Card>
-        <div style={{display:"flex",justifyContent:"space-between"}}>
-          <Btn onClick={function(){sStep(1);}} v="ghost">← Voltar</Btn>
+        </div>
+        {/* Summary */}
+        {sp&&<div style={{background:C.faint,border:"1px solid "+C.border,borderRadius:8,padding:"12px 14px"}}>
+          <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,marginBottom:8}}>RESUMO DO PROGRAMA</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+            {[{l:"Esporte",v:sp.icon+" "+sp.name},{l:"Posição",v:pos},{l:"Objetivo",v:goal},{l:"Nível",v:lv},{l:"Frequência",v:days+"× semana"},{l:"Duração",v:mins+"min/treino"}].map(function(f){return<div key={f.l}>
+              <div style={{color:C.grayLight,fontSize:8,fontWeight:700,letterSpacing:.5}}>{f.l.toUpperCase()}</div>
+              <div style={{color:C.text,fontSize:11,fontWeight:600,marginTop:1}}>{f.v}</div>
+            </div>;})}
+          </div>
+        </div>}
+        <div style={{display:"flex",justifyContent:"space-between",gap:8}}>
+          <Btn onClick={function(){sStep(2);}} v="ghost">← Voltar</Btn>
           <Btn onClick={function(){onComplete({sport,position:pos,level:lv,age,sex,weight:wt,height:ht,goal,daysPerWeek:days,minutesPerSession:mins});}}>Gerar programa ▶</Btn>
         </div>
       </div>}
@@ -917,7 +875,7 @@ function OnboardScreen({user,onComplete}){
 }
 
 /* ─── DASHBOARD TAB ──────────────────────────────────────── */
-function DashboardTab({activity,user,onGoToPlan}){
+function DashboardTab({activity,user,onGoToPlan,onSaveBodyLog}){
   var plan=activity?activity.plan:null;
   var sessions=activity?activity.sessions||[]:[];
   var sp=activity?SPORTS.find(function(s){return s.id===activity.sport;}):null;
@@ -927,277 +885,318 @@ function DashboardTab({activity,user,onGoToPlan}){
   var weekPct=wt>0?Math.round((wd/wt)*100):0;
   var cyclePct=plan?Math.round(((plan.currentWeek-1)/12)*100):0;
   var totalSess=sessions.length;
-  var avgRpe=totalSess?parseFloat((sessions.slice(0,8).reduce(function(a,s){return a+(+s.rpe||7.2);},0)/Math.min(8,totalSess)).toFixed(1)):7.2;
-  var weekLoad=Math.round(avgRpe*(wd||1)*45);
-  var prevLoad=Math.round(weekLoad*0.87);
-  var acwr=weekLoad>0?parseFloat((weekLoad/(prevLoad||weekLoad)).toFixed(2)):1.0;
+
+  /* ── Real RPE average from last 8 sessions ── */
+  var avgRpe=totalSess>0
+    ?parseFloat((sessions.slice(0,8).reduce(function(a,s){return a+(+s.rpe||0);},0)/sessions.slice(0,8).filter(function(s){return s.rpe;}).length||1).toFixed(1))
+    :0;
+
+  /* ── Real ACWR from sessions ── */
+  function calcACWR(sessArr){
+    if(sessArr.length<2)return null;
+    var now=Date.now(),day=86400000,week=7*day;
+    function loadFor(start,end){
+      return sessArr.filter(function(s){
+        var d=new Date(s.ts||now).getTime();
+        return d>=now-end&&d<=now-start;
+      }).reduce(function(a,s){return a+(+s.rpe||7)*(+s.duration||45)/60;},0);
+    }
+    var acute=loadFor(0,week);
+    var chronic=(loadFor(0,week)+loadFor(week,2*week)+loadFor(2*week,3*week)+loadFor(3*week,4*week))/4;
+    if(chronic<1)return null;
+    return parseFloat((acute/chronic).toFixed(2));
+  }
+  var acwrReal=calcACWR(sessions);
+  var acwr=acwrReal||1.0;
   var acwrColor=acwr<0.8?C.blue:acwr<=1.3?C.green:acwr<=1.5?C.amber:C.red;
+
+  /* ── Real streak (consecutive weeks with ≥1 session) ── */
   var streak=0;
-  if(plan){for(var wi=(plan.currentWeek||1)-1;wi>=0;wi--){var w=plan.weeks[wi];if(w&&w.sessions.filter(function(s){return s.completed;}).length>0)streak++;else break;}}
-  var perfScore=Math.min(100,Math.round((weekPct*0.3)+(cyclePct*0.2)+(Math.min(totalSess*5,25)*0.2)+(acwr>=0.8&&acwr<=1.3?25:15)*0.2+(streak*3*0.1)));
-  /* ── body data ── */
-  var[bodyData,setBodyData]=useState({
-    weights:[78.4,78.1,77.9,77.6,77.2,77.0,76.8],
-    dates:["05/01","12/01","19/01","26/01","02/02","09/02","16/02"],
-    current:76.8,goal:74.0,
-  });
-  /* ── strength PRs ── */
-  var[prData,setPrData]=useState({bench:"",squat:"",deadlift:"",sprint40:"",sprint10:""});
-  var[showPREdit,sShowPREdit]=useState(false);
-  var[scoreOpen,sScoreOpen]=useState(false);
-  var[kpiModal,sKpiModal]=useState(null);
-  var[weightOpen,sWeightOpen]=useState(false);
-  var[quickWeight,sQuickWeight]=useState("");
-  var strengthTrend=[{l:"Sup",v:prData.bench||"—",trend:[65,70,75,80,82.5,85]},{l:"Agach",v:prData.squat||"—",trend:[80,90,95,100,105,110]},{l:"Terra",v:prData.deadlift||"—",trend:[100,110,115,120,125,130]}];
-  /* ── training calendar (last 5 weeks) ── */
-  var calWeeks=5,calDays=7;
-  var calData=[];
-  for(var wk=0;wk<calWeeks;wk++){var row=[];for(var d=0;d<calDays;d++){var r=Math.random();row.push(wk===calWeeks-1&&d>4?0:r>0.5?2:r>0.3?1:0);}calData.push(row);}
-  var calColors=[C.faint,C.red+"44",C.red];
+  if(plan){for(var wi=(plan.currentWeek||1)-1;wi>=0;wi--){var ww=plan.weeks[wi];if(ww&&ww.sessions.filter(function(s){return s.completed;}).length>0)streak++;else break;}}
+
+  /* ── Perf score from real data ── */
+  var perfScore=Math.min(100,Math.round(
+    (weekPct*0.3)+(cyclePct*0.2)+(Math.min(totalSess*5,25)*0.2)+
+    (acwr>=0.8&&acwr<=1.3?25:acwr>0?15:5)*0.2+(streak*3*0.1)
+  ));
+
+  /* ── Real training heatmap from session dates ── */
+  function buildCalendar(sessArr){
+    var weeks=5,days=7,result=[];
+    var now=new Date();now.setHours(0,0,0,0);
+    var dow=now.getDay();
+    var monday=new Date(now);monday.setDate(now.getDate()-(dow===0?6:dow-1));
+    for(var w=0;w<weeks;w++){
+      var row=[];
+      for(var d=0;d<days;d++){
+        var date=new Date(monday);date.setDate(monday.getDate()-(weeks-1-w)*7+d);
+        var dateStr=date.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"});
+        var count=sessArr.filter(function(s){return s.date===dateStr;}).length;
+        row.push(Math.min(count,2));
+      }
+      result.push(row);
+    }
+    return result;
+  }
+  var calData=buildCalendar(sessions);
+  var calColors=[C.faint,C.red+"55",C.red];
   var dayLabels=["S","T","Q","Q","S","S","D"];
+
+  /* ── Body weight logs from activity ── */
+  var bodyLogs=activity?activity.bodyLogs||[]:[];
+  var latestWeight=bodyLogs.length>0?bodyLogs[bodyLogs.length-1].w:null;
+  var weightGoal=activity?activity.weightGoal||null:null;
+  var weightHistory=bodyLogs.slice(-7).map(function(l){return l.w;});
+  var weightDates=bodyLogs.slice(-7).map(function(l){return l.date;});
+
+  /* ── Strength PRs from session exercise logs ── */
+  var[prData,setPrData]=useState(activity?activity.prs||{bench:"",squat:"",deadlift:"",sprint40:"",sprint10:""}:{bench:"",squat:"",deadlift:"",sprint40:"",sprint10:""});
+  var[showPREdit,sShowPREdit]=useState(false);
+
+  /* ── Load chart from real sessions ── */
+  var loadByDay=(function(){
+    var days=["S","T","Q","Q","S","S","D"];
+    var now=new Date();now.setHours(0,0,0,0);
+    var dow=now.getDay();
+    var monday=new Date(now);monday.setDate(now.getDate()-(dow===0?6:dow-1));
+    return days.map(function(_,d){
+      var date=new Date(monday);date.setDate(monday.getDate()+d);
+      var dateStr=date.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"});
+      var daySess=sessions.filter(function(s){return s.date===dateStr;});
+      return daySess.reduce(function(a,s){return a+(+s.rpe||7)*(+s.duration||45)/60;},0);
+    });
+  })();
+  var hasLoadData=loadByDay.some(function(v){return v>0;});
+
   if(!activity)return<div style={{padding:60,textAlign:"center"}}>
     <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,color:C.text,letterSpacing:1,marginBottom:8}}>CONFIGURE SEU ESPORTE</div>
     <div style={{color:C.grayLight,fontSize:13}}>Complete o onboarding para começar.</div>
   </div>;
 
   return<div className="au" style={{display:"flex",flexDirection:"column",gap:0,padding:"0 0 20px"}}>
-    {/* ── SCORE MODAL ── */}
-    {scoreOpen&&<div style={{position:"fixed",inset:0,zIndex:200,display:"flex",alignItems:"flex-end"}} onClick={function(){sScoreOpen(false);}}>
-      <div className="pop" onClick={function(e){e.stopPropagation();}} style={{background:C.white,borderRadius:"16px 16px 0 0",width:"100%",maxWidth:800,margin:"0 auto",padding:"20px 20px calc(28px + "+SAB+")",boxShadow:"0 -12px 48px rgba(0,0,0,.18)"}}>
-        <div style={{width:40,height:4,background:C.border,borderRadius:99,margin:"0 auto 18px"}}/>
-        <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,color:C.text,letterSpacing:.5,marginBottom:18}}>COMPOSIÇÃO DO SCORE</div>
-        {[{l:"Aderência semanal",v:Math.round(weekPct*.3),max:30,color:C.red},{l:"Progresso do ciclo",v:Math.round(cyclePct*.2),max:20,color:C.blue},{l:"Sessões acumuladas",v:Math.min(Math.round(totalSess*5*.2),25),max:25,color:C.green},{l:"ACWR / carga",v:Math.round((acwr>=0.8&&acwr<=1.3?25:15)*.2),max:20,color:C.amber},{l:"Streak semanal",v:Math.min(Math.round(streak*3*.1),5),max:5,color:C.indigo}].map(function(s){return<div key={s.l} style={{marginBottom:14}}>
-          <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}><span style={{color:C.gray,fontSize:12}}>{s.l}</span><span style={{color:s.color,fontWeight:700,fontSize:12}}>{s.v+" / "+s.max}</span></div>
-          <div style={{background:C.faint,borderRadius:99,height:6}}><div style={{width:(s.v/s.max*100)+"%",background:s.color,height:"100%",borderRadius:99,transition:"width 1.2s ease"}}/></div>
-        </div>;})}
-        <div style={{marginTop:18,padding:"14px 16px",background:C.faint,borderRadius:10,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <span style={{color:C.grayLight,fontWeight:700,fontSize:12}}>PERFORMANCE SCORE</span>
-          <span style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:32,color:C.red}}>{perfScore} <span style={{fontSize:16,color:C.grayLight}}>/ 100</span></span>
-        </div>
-      </div>
-    </div>}
-    {/* ── KPI MODAL ── */}
-    {kpiModal&&<div style={{position:"fixed",inset:0,zIndex:200,display:"flex",alignItems:"flex-end"}} onClick={function(){sKpiModal(null);}}>
-      <div className="pop" onClick={function(e){e.stopPropagation();}} style={{background:C.white,borderRadius:"16px 16px 0 0",width:"100%",maxWidth:800,margin:"0 auto",padding:"20px 20px calc(28px + "+SAB+")",boxShadow:"0 -12px 48px rgba(0,0,0,.18)"}}>
-        <div style={{width:40,height:4,background:C.border,borderRadius:99,margin:"0 auto 18px"}}/>
-        <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:1.5,marginBottom:6}}>{kpiModal.l}</div>
-        <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:52,color:kpiModal.col||C.text,lineHeight:1,marginBottom:14}}>{kpiModal.v}</div>
-        <div style={{color:C.gray,fontSize:14,lineHeight:1.7}}>{kpiModal.detail}</div>
-      </div>
-    </div>}
-    {/* ── WEIGHT MODAL ── */}
-    {weightOpen&&<div style={{position:"fixed",inset:0,zIndex:200,display:"flex",alignItems:"flex-end"}} onClick={function(){sWeightOpen(false);}}>
-      <div className="pop" onClick={function(e){e.stopPropagation();}} style={{background:C.white,borderRadius:"16px 16px 0 0",width:"100%",maxWidth:800,margin:"0 auto",padding:"20px 20px calc(28px + "+SAB+")",boxShadow:"0 -12px 48px rgba(0,0,0,.18)"}}>
-        <div style={{width:40,height:4,background:C.border,borderRadius:99,margin:"0 auto 18px"}}/>
-        <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,color:C.text,letterSpacing:.5,marginBottom:14}}>REGISTRAR PESO</div>
-        <Inp label="Peso atual (kg)" value={quickWeight} onChange={sQuickWeight} type="number" placeholder={bodyData.current.toString()}/>
-        <div style={{marginTop:14,display:"flex",gap:8}}>
-          <Btn v="ghost" full onClick={function(){sWeightOpen(false);}}>Cancelar</Btn>
-          <Btn full onClick={function(){if(quickWeight){setBodyData(function(p){return{weights:[parseFloat(quickWeight)].concat(p.weights),dates:[new Date().toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})].concat(p.dates),current:parseFloat(quickWeight),goal:p.goal};});sQuickWeight("");sWeightOpen(false);}}}> Salvar</Btn>
-        </div>
-      </div>
-    </div>}
-
     {/* ── HERO ── */}
-    <div style={{background:"linear-gradient(160deg,#0A0A0A 0%,#1C1C1C 100%)",padding:"22px 0 18px",marginBottom:16,marginLeft:-14,marginRight:-14,paddingLeft:14,paddingRight:14,position:"relative",overflow:"hidden"}}>
-      <div style={{position:"absolute",top:-40,right:-40,width:180,height:180,borderRadius:"50%",background:C.red+"08",pointerEvents:"none"}}/>
-      <div style={{color:"#ffffff22",fontSize:9,letterSpacing:2,textTransform:"uppercase",marginBottom:10}}>{new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"})}</div>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12}}>
-        <div style={{flex:1,minWidth:0}}>
-          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:36,color:"#fff",letterSpacing:2,lineHeight:1}}>{(sp?sp.name:"CONFIGURE").toUpperCase()}</div>
-          <div style={{color:"#ffffff55",fontSize:11,marginTop:4,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{activity.position||"Posição"}</div>
-          <div style={{display:"flex",gap:6,marginTop:10,flexWrap:"wrap"}}>
-            <span style={{background:"#ffffff0C",border:"1px solid #ffffff14",color:"#ffffff77",fontSize:9,fontWeight:700,padding:"4px 9px",borderRadius:5,letterSpacing:.5}}>{"S"+(plan?plan.currentWeek:1)+"/12"}</span>
-            {cw&&<span style={{background:cw.phaseColor+"22",border:"1px solid "+cw.phaseColor+"44",color:cw.phaseColor,fontSize:9,fontWeight:700,padding:"4px 9px",borderRadius:5}}>{cw.phase.toUpperCase()}</span>}
-          </div>
+    <div style={{background:C.dark,padding:"20px 0 16px",marginBottom:16,marginLeft:-14,marginRight:-14,paddingLeft:14,paddingRight:14}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+        <div>
+          <div style={{color:"#ffffff33",fontSize:9,letterSpacing:2,textTransform:"uppercase",marginBottom:6}}>{new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"})}</div>
+          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:28,color:"#fff",letterSpacing:2,lineHeight:1}}>{(sp?sp.name:"ESPORTE").toUpperCase()}</div>
+          <div style={{color:"#ffffff44",fontSize:11,marginTop:3}}>{(activity.position||"")+" · S"+(plan?plan.currentWeek:1)+"/12 · "+(cw?cw.phase:"")}</div>
         </div>
-        <div onClick={function(){sScoreOpen(true);}} style={{flexShrink:0,cursor:"pointer",opacity:.95}}>
-          <ProgressRing pct={perfScore} color={C.red} size={108} stroke={9} value={perfScore} label="SCORE"/>
+        <div style={{textAlign:"right"}}>
+          <div style={{color:C.red,fontFamily:"'Bebas Neue',sans-serif",fontSize:52,lineHeight:1}}>{perfScore}</div>
+          <div style={{color:"#ffffff33",fontSize:8,letterSpacing:2}}>PERF SCORE</div>
         </div>
       </div>
-      <div style={{marginTop:20}}>
-        <div style={{display:"flex",gap:2}}>
-          {(plan?plan.weeks:[]).map(function(w){var done=w.sessions.filter(function(s){return s.completed;}).length===w.sessions.length&&w.sessions.length>0,isCur=w.week===(plan?plan.currentWeek:1);return<div key={w.week} style={{flex:1,height:3,borderRadius:2,background:done?C.red:isCur?"#ffffff55":"#ffffff14",transition:"background .3s"}}/>;})}</div>
-        <div style={{display:"flex",justifyContent:"space-between",marginTop:5}}>
-          <span style={{color:"#ffffff22",fontSize:8}}>Ciclo {cyclePct}%</span>
-          <span style={{color:"#ffffff44",fontSize:8}}>Semana {plan?plan.currentWeek:1} de 12</span>
-        </div>
+      <div style={{display:"flex",gap:1.5,marginTop:14}}>
+        {(plan?plan.weeks:[]).map(function(w){var done=w.sessions.filter(function(s){return s.completed;}).length===w.sessions.length&&w.sessions.length>0,isCur=w.week===(plan?plan.currentWeek:1);return<div key={w.week} style={{flex:1,height:3,background:done?C.red:isCur?"#ffffff66":"#ffffff18",transition:"background .3s"}}/>;})
+        }
+      </div>
+      <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}>
+        <span style={{color:"#ffffff22",fontSize:8}}>Ciclo {cyclePct}%</span>
+        <span style={{color:"#ffffff44",fontSize:8}}>S{plan?plan.currentWeek:1}/12</span>
       </div>
     </div>
 
-    {/* ── PRÓXIMO TREINO (ação primária acima dos KPIs) ── */}
-    {cw&&(function(){var next=cw.sessions.find(function(s){return!s.completed;});
-      if(!next)return<div style={{background:"linear-gradient(135deg,"+C.green+",#22c55e)",borderRadius:12,padding:"14px 16px",marginBottom:14,display:"flex",alignItems:"center",gap:12,boxShadow:"0 6px 20px "+C.green+"40"}}>
-        <div style={{fontSize:28}}>🏆</div>
-        <div><div style={{color:"rgba(255,255,255,.75)",fontSize:9,fontWeight:700,letterSpacing:1.5}}>SEMANA CONCLUÍDA</div><div style={{color:"#fff",fontWeight:800,fontSize:15}}>Todos os treinos da semana completos!</div></div>
-      </div>;
-      return<div onClick={onGoToPlan} style={{background:"linear-gradient(135deg,"+C.red+" 0%,"+C.redDk+" 100%)",borderRadius:12,padding:"16px 18px",display:"flex",alignItems:"center",gap:14,cursor:"pointer",marginBottom:14,boxShadow:"0 8px 24px "+C.red+"45",position:"relative",overflow:"hidden"}}>
-        <div style={{position:"absolute",top:-20,right:-20,width:120,height:120,borderRadius:"50%",background:"rgba(255,255,255,.04)"}}/>
-        <div style={{width:46,height:46,background:"rgba(255,255,255,.18)",borderRadius:11,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Icon name="bolt" size={23} color="#fff"/></div>
-        <div style={{flex:1,minWidth:0}}>
-          <div style={{color:"rgba(255,255,255,.6)",fontSize:9,fontWeight:700,letterSpacing:1.5,marginBottom:3}}>TREINO DE HOJE</div>
-          <div style={{color:"#fff",fontWeight:800,fontSize:16,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{next.name}</div>
-          <div style={{color:"rgba(255,255,255,.6)",fontSize:11,marginTop:3}}>{next.type+" · "+(next.duration||60)+"min · +"+(next.xp||50)+" XP"}</div>
-        </div>
-        <div style={{background:"rgba(255,255,255,.18)",borderRadius:9,padding:"10px 11px",flexShrink:0}}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.9)" strokeWidth="2.5" strokeLinecap="round" style={{width:18,height:18}}><path d="M9 18l6-6-6-6"/></svg>
-        </div>
-      </div>;
-    }())}
-
-    {/* ── KPI 2×2 interativo ── */}
-    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+    {/* ── KPIs reais ── */}
+    <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:16}}>
       {[
-        {l:"TREINOS",v:totalSess||0,unit:"total",col:C.text,detail:"Total de sessões registradas desde o início da sua jornada no ARES."},
-        {l:"STREAK",v:streak>0?streak+"W":"—",unit:"semanas",col:streak>=4?C.red:C.text,detail:"Semanas consecutivas com pelo menos 1 sessão registrada. Mantenha o ritmo!"},
-        {l:"ADERÊNCIA",v:weekPct+"%",unit:"esta semana",col:weekPct>=75?C.green:weekPct>=50?C.amber:C.red,detail:"Percentual de sessões do plano concluídas nesta semana. Meta: 100%."},
-        {l:"RPE MÉDIO",v:avgRpe,unit:"intensidade",col:avgRpe>=8?C.red:avgRpe>=6?C.amber:C.green,detail:"Intensidade média das últimas 8 sessões. Escala de 1 (fácil) a 10 (máximo)."},
-      ].map(function(k){return<div key={k.l} onClick={function(){sKpiModal(k);}} style={{background:C.white,borderRadius:12,padding:"18px 14px",cursor:"pointer",boxShadow:sh.sm,transition:"transform .15s,box-shadow .15s",WebkitTapHighlightColor:"transparent",userSelect:"none"}}
-        onTouchStart={function(e){e.currentTarget.style.transform="scale(.97)";}} onTouchEnd={function(e){e.currentTarget.style.transform="scale(1)";}}>
-        <div style={{color:C.grayLight,fontSize:8,fontWeight:700,letterSpacing:1,textTransform:"uppercase",marginBottom:7}}>{k.l}</div>
-        <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:36,color:k.col,lineHeight:1}}>{k.v}</div>
-        <div style={{color:C.grayLight,fontSize:9,marginTop:4,display:"flex",alignItems:"center",gap:4}}>{k.unit}<svg viewBox="0 0 24 24" fill="none" stroke={C.grayLight} strokeWidth="2" style={{width:10,height:10}}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+        {l:"TREINOS",v:totalSess>0?totalSess.toString():"—",sub:"registrados"},
+        {l:"STREAK",v:streak>0?streak+"W":"—",sub:"semanas"},
+        {l:"SEMANA",v:wt>0?weekPct+"%":"—",sub:"aderência"},
+        {l:"RPE",v:avgRpe>0?avgRpe.toString():"—",sub:"médio"},
+      ].map(function(k){return<div key={k.l} style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"12px 10px",textAlign:"center"}}>
+        <div style={{color:C.grayLight,fontSize:7,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",marginBottom:5}}>{k.l}</div>
+        <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:24,color:k.v!=="—"?C.text:C.grayLight,lineHeight:1}}>{k.v}</div>
+        <div style={{color:C.grayLight,fontSize:8,marginTop:2}}>{k.sub}</div>
       </div>;})}
     </div>
 
-    {/* ── DESAFIOS DA SEMANA ── */}
-    <ChallengesCard activity={activity}/>
+    {/* ── Próximo treino ── */}
+    {cw&&(function(){var next=cw.sessions.find(function(s){return!s.completed;});if(!next)return null;
+      return<div onClick={onGoToPlan} style={{background:C.red,borderRadius:8,padding:"14px 16px",display:"flex",alignItems:"center",gap:14,cursor:"pointer",marginBottom:16}}>
+        <div style={{width:36,height:36,background:"rgba(255,255,255,.15)",borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Icon name="bolt" size={18} color="#fff"/></div>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{color:"rgba(255,255,255,.6)",fontSize:9,fontWeight:700,letterSpacing:1,marginBottom:1}}>PRÓXIMO TREINO</div>
+          <div style={{color:"#fff",fontWeight:700,fontSize:15,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{next.name}</div>
+          <div style={{color:"rgba(255,255,255,.55)",fontSize:11,marginTop:1}}>{next.type+" · "+(next.duration||60)+"min"}</div>
+        </div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" strokeWidth="2" strokeLinecap="round" style={{width:16,height:16,flexShrink:0}}><path d="M9 18l6-6-6-6"/></svg>
+      </div>;
+    }())}
 
-    {/* ── CONQUISTAS (PREVIEW) ── */}
-    <BadgesView activity={activity} compact/>
-
-    {/* ── PESO / COMPOSIÇÃO ── */}
-    <div style={{background:C.white,borderRadius:12,padding:"16px",marginBottom:12,boxShadow:sh.sm}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
+    {/* ── Peso ── */}
+    <div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"16px",marginBottom:12}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:latestWeight?12:8}}>
         <div>
-          <div style={{color:C.grayLight,fontSize:8,fontWeight:700,letterSpacing:1,textTransform:"uppercase",marginBottom:4}}>PESO CORPORAL</div>
-          <div style={{display:"flex",alignItems:"baseline",gap:8}}>
-            <span style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:40,color:C.text,lineHeight:1}}>{bodyData.current}</span>
-            <span style={{color:C.grayLight,fontSize:13}}>kg</span>
-            <span style={{background:C.green+"14",color:C.green,fontSize:10,fontWeight:700,padding:"3px 8px",borderRadius:5}}>{(bodyData.weights[0]-bodyData.current).toFixed(1)+"kg ↓"}</span>
-          </div>
+          <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",marginBottom:3}}>PESO CORPORAL</div>
+          {latestWeight
+            ?<div style={{display:"flex",alignItems:"baseline",gap:8}}>
+              <span style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:34,color:C.text,lineHeight:1}}>{latestWeight}</span>
+              <span style={{color:C.grayLight,fontSize:12}}>kg</span>
+              {weightHistory.length>1&&<span style={{background:weightHistory[0]>latestWeight?C.green+"14":C.red+"14",color:weightHistory[0]>latestWeight?C.green:C.red,fontSize:10,fontWeight:700,padding:"2px 7px",borderRadius:4}}>
+                {Math.abs(latestWeight-weightHistory[0]).toFixed(1)+"kg "+(weightHistory[0]>latestWeight?"↓":"↑")}
+              </span>}
+            </div>
+            :<div style={{color:C.grayLight,fontSize:12}}>Registre seu peso na aba Corpo</div>}
         </div>
-        <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:8}}>
-          <div style={{textAlign:"right"}}>
-            <div style={{color:C.grayLight,fontSize:8,fontWeight:700,letterSpacing:.8}}>META</div>
-            <div style={{color:C.red,fontFamily:"'Bebas Neue',sans-serif",fontSize:22,lineHeight:1.1}}>{bodyData.goal} kg</div>
-          </div>
-          <button onClick={function(){sWeightOpen(true);}} style={{background:C.red,border:"none",borderRadius:7,color:"#fff",fontSize:10,fontWeight:700,padding:"7px 13px",cursor:"pointer",letterSpacing:.3}}>+ Peso</button>
-        </div>
+        {weightGoal&&<div style={{textAlign:"right"}}>
+          <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8}}>META</div>
+          <div style={{color:C.red,fontFamily:"'Bebas Neue',sans-serif",fontSize:20,lineHeight:1.2}}>{weightGoal} kg</div>
+          {latestWeight&&<div style={{color:C.grayLight,fontSize:9}}>{Math.abs(latestWeight-weightGoal).toFixed(1)+" restam"}</div>}
+        </div>}
       </div>
-      <Sparkline data={bodyData.weights} color={C.red} h={52} showDots/>
-      <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}>
-        <span style={{color:C.grayLight,fontSize:8}}>{bodyData.dates[0]}</span>
-        <span style={{color:C.grayLight,fontSize:8}}>{bodyData.dates[bodyData.dates.length-1]}</span>
-      </div>
-      <div style={{marginTop:10,height:5,background:C.faint,borderRadius:99,overflow:"hidden"}}>
-        <div style={{height:"100%",width:Math.min(100,Math.max(0,Math.round(((bodyData.weights[bodyData.weights.length-1]-bodyData.current)/(bodyData.weights[bodyData.weights.length-1]-bodyData.goal))*100)))+"%",background:"linear-gradient(90deg,"+C.green+",#22c55e)",borderRadius:99,transition:"width 1s"}}/>
-      </div>
-      <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}>
-        <span style={{color:C.grayLight,fontSize:8}}>Início</span>
-        <span style={{color:C.green,fontSize:9,fontWeight:700}}>{(bodyData.current-bodyData.goal).toFixed(1)+" kg para a meta"}</span>
-      </div>
+      {weightHistory.length>1
+        ?<Sparkline data={weightHistory} color={C.red} h={48} showDots/>
+        :<div style={{height:40,background:C.faint,borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{color:C.grayLight,fontSize:10}}>Registre peso na aba Corpo para ver o gráfico</span></div>}
+      {weightDates.length>1&&<div style={{display:"flex",justifyContent:"space-between",marginTop:4}}>
+        <span style={{color:C.grayLight,fontSize:8}}>{weightDates[0]}</span>
+        <span style={{color:C.grayLight,fontSize:8}}>{weightDates[weightDates.length-1]}</span>
+      </div>}
     </div>
 
-    {/* ── FORÇA: PRs ── */}
-    <div style={{background:C.white,borderRadius:12,padding:"16px",marginBottom:12,boxShadow:sh.sm}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-        <div>
-          <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase"}}>REGISTROS DE FORÇA</div>
-        </div>
-        <button onClick={function(){sShowPREdit(!showPREdit);}} style={{background:"none",border:"1px solid "+C.border,borderRadius:5,padding:"4px 10px",fontSize:10,fontWeight:700,color:C.gray,cursor:"pointer"}}>{showPREdit?"Fechar":"+ PRs"}</button>
+    {/* ── Força PRs ── */}
+    <div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"16px",marginBottom:12}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+        <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase"}}>REGISTROS DE FORÇA</div>
+        <button onClick={function(){sShowPREdit(!showPREdit);}} style={{background:"none",border:"1px solid "+C.border,borderRadius:4,padding:"3px 8px",fontSize:9,fontWeight:700,color:C.gray,cursor:"pointer"}}>{showPREdit?"Fechar":"+ PRs"}</button>
       </div>
-      {showPREdit&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:14}}>
+      {showPREdit&&<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
         {[{k:"bench",l:"Supino (kg)"},{k:"squat",l:"Agach. (kg)"},{k:"deadlift",l:"Terra (kg)"},{k:"sprint40",l:"40yd (s)"},{k:"sprint10",l:"10m (s)"}].map(function(f){return<div key={f.k}>
-          <div style={{color:C.grayLight,fontSize:9,fontWeight:700,marginBottom:3}}>{f.l.toUpperCase()}</div>
+          <div style={{color:C.grayLight,fontSize:9,fontWeight:700,marginBottom:2}}>{f.l.toUpperCase()}</div>
           <input type="number" step="0.5" value={prData[f.k]||""} placeholder="—" onChange={function(e){setPrData(function(p){var n=Object.assign({},p);n[f.k]=e.target.value;return n;});}} style={{width:"100%",background:C.faint,border:"1px solid "+C.border,borderRadius:5,padding:"8px 10px",fontSize:13,outline:"none",color:C.text}}/>
         </div>;})}
-        <div style={{gridColumn:"1/-1"}}><Btn sm full onClick={function(){sShowPREdit(false);}}>Salvar</Btn></div>
+        <div style={{gridColumn:"1/-1"}}><Btn sm full onClick={function(){sShowPREdit(false);}}>Salvar PRs</Btn></div>
       </div>}
       <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6}}>
         {[{l:"Supino",v:prData.bench,u:"kg"},{l:"Agach.",v:prData.squat,u:"kg"},{l:"Deadlift",v:prData.deadlift,u:"kg"},{l:"40 yards",v:prData.sprint40,u:"s"},{l:"10 metros",v:prData.sprint10,u:"s"},{l:"Sessões",v:totalSess>0?totalSess.toString():null,u:"total"}].map(function(m){return<div key={m.l} style={{background:C.faint,borderRadius:6,padding:"10px 8px",textAlign:"center"}}>
           <div style={{color:C.grayLight,fontSize:8,fontWeight:700,letterSpacing:.6,marginBottom:4}}>{m.l.toUpperCase()}</div>
-          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:m.v?"20":"15",color:m.v?C.text:C.grayLight,lineHeight:1}}>{m.v||"—"}</div>
+          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:m.v?"20":"14",color:m.v?C.text:C.grayLight,lineHeight:1}}>{m.v||"—"}</div>
           {m.v&&<div style={{color:C.grayLight,fontSize:8,marginTop:2}}>{m.u}</div>}
         </div>;})}
       </div>
-      {(prData.bench||prData.squat||prData.deadlift)&&<div style={{marginTop:12}}>
-        {strengthTrend.filter(function(s){return s.v!=="—";}).map(function(s,i){return<div key={i} style={{marginBottom:10}}>
-          <div style={{display:"flex",justifyContent:"space-between",marginBottom:4}}>
-            <span style={{color:C.gray,fontSize:10,fontWeight:600}}>{s.l}</span>
-            <span style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:14,color:C.red}}>{s.v+" kg"}</span>
-          </div>
-          <Sparkline data={s.trend} color={C.red} h={28}/>
-        </div>;})}
-      </div>}
     </div>
 
-    {/* ── FREQUÊNCIA DE TREINO ── */}
-    <div style={{background:C.white,borderRadius:12,padding:"16px",marginBottom:12,boxShadow:sh.sm}}>
-      <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",marginBottom:12}}>FREQUÊNCIA DE TREINO</div>
-      <div style={{display:"flex",gap:6}}>
-        <div style={{display:"flex",flexDirection:"column",gap:4,marginRight:2}}>
-          {calData.map(function(_,wi){return<div key={wi} style={{height:14,display:"flex",alignItems:"center"}}><span style={{color:C.grayLight,fontSize:7,width:12}}>{"S"+(calWeeks-wi)}</span></div>;}).reverse()}
-        </div>
+    {/* ── Heatmap de frequência REAL ── */}
+    <div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"16px",marginBottom:12}}>
+      <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",marginBottom:10}}>
+        FREQUÊNCIA DE TREINO
+        {totalSess===0&&<span style={{color:C.grayLight,fontSize:9,fontWeight:400,textTransform:"none",marginLeft:6}}>— Registre treinos para preencher</span>}
+      </div>
+      <div style={{display:"flex",gap:5}}>
+        <div style={{display:"flex",flexDirection:"column",gap:4,paddingTop:18}}>
+          {calData.map(function(_,wi){return<div key={wi} style={{height:14,display:"flex",alignItems:"center"}}><span style={{color:C.grayLight,fontSize:7,width:14}}>{"S"+(5-wi)}</span></div>;})}</div>
         <div style={{flex:1}}>
-          <div style={{display:"flex",gap:4,marginBottom:4}}>
-            {dayLabels.map(function(d,i){return<div key={i} style={{flex:1,textAlign:"center",color:C.grayLight,fontSize:7,fontWeight:600}}>{d}</div>;})}
-          </div>
-          {calData.map(function(row,wi){return<div key={wi} style={{display:"flex",gap:4,marginBottom:4}}>
-            {row.map(function(v,di){return<div key={di} style={{flex:1,height:14,borderRadius:3,background:calColors[v],transition:"background .2s"}}/>;})}</div>;}).reverse()}
+          <div style={{display:"flex",gap:3,marginBottom:4}}>{dayLabels.map(function(d,i){return<div key={i} style={{flex:1,textAlign:"center",color:C.grayLight,fontSize:7,fontWeight:600}}>{d}</div>;})}</div>
+          {calData.map(function(row,wi){return<div key={wi} style={{display:"flex",gap:3,marginBottom:3}}>
+            {row.map(function(v,di){return<div key={di} style={{flex:1,height:14,borderRadius:3,background:calColors[v],transition:"background .2s"}}/>;})}</div>;})}
         </div>
       </div>
-      <div style={{display:"flex",alignItems:"center",gap:6,marginTop:8}}>
-        <span style={{color:C.grayLight,fontSize:8}}>Menos</span>
+      <div style={{display:"flex",alignItems:"center",gap:5,marginTop:8}}>
+        <span style={{color:C.grayLight,fontSize:8}}>Nenhum</span>
         {calColors.map(function(cl,i){return<div key={i} style={{width:10,height:10,borderRadius:2,background:cl,border:"1px solid "+C.border}}/>;})}
-        <span style={{color:C.grayLight,fontSize:8}}>Mais</span>
+        <span style={{color:C.grayLight,fontSize:8}}>2+ treinos</span>
       </div>
     </div>
 
-    {/* ── CARGA SEMANAL ── */}
-    <div style={{background:C.white,borderRadius:12,padding:"16px",boxShadow:sh.sm}}>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:12}}>
+    {/* ── Carga semanal REAL ── */}
+    <div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"16px"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:10}}>
         <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase"}}>CARGA SEMANAL</div>
-        <div style={{display:"flex",alignItems:"center",gap:6}}>
-          <span style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:16,color:acwrColor}}>ACWR {acwr.toFixed(2)}</span>
-          <span style={{background:acwrColor+"14",color:acwrColor,fontSize:8,fontWeight:700,padding:"2px 6px",borderRadius:4}}>{acwr<=1.3?"OK":acwr<=1.5?"ATENÇÃO":"RISCO"}</span>
+        <div style={{display:"flex",alignItems:"center",gap:5}}>
+          {acwrReal
+            ?<><span style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:15,color:acwrColor}}>ACWR {acwr.toFixed(2)}</span>
+              <span style={{background:acwrColor+"14",color:acwrColor,fontSize:8,fontWeight:700,padding:"2px 5px",borderRadius:3,border:"1px solid "+acwrColor+"25"}}>{acwr<=1.3?"OK":acwr<=1.5?"ATENÇÃO":"RISCO"}</span></>
+            :<span style={{color:C.grayLight,fontSize:9}}>Registre sessões para ACWR</span>}
         </div>
       </div>
-      <BarChart data={[prevLoad*.6,prevLoad*.85,prevLoad*.9,prevLoad,weekLoad*.7,weekLoad*.9,weekLoad]} colors={[prevLoad*.6,prevLoad*.85,prevLoad*.9,prevLoad,weekLoad*.7,weekLoad*.9,weekLoad].map(function(v,i){return i===6?C.red:C.red+"33";})} labels={["S","T","Q","Q","S","S","D"]} h={52}/>
-      {acwr>1.3&&<div style={{marginTop:10,padding:"8px 10px",background:C.amberBg,borderRadius:5,border:"1px solid "+C.amber+"30",fontSize:11,color:C.amber,fontWeight:500}}>⚠ Reduza volume 15% esta semana.</div>}
+      {hasLoadData
+        ?<BarChart data={loadByDay} colors={loadByDay.map(function(v,i){return i===new Date().getDay()?C.red:C.red+"33";})} labels={dayLabels} h={52}/>
+        :<div style={{height:52,background:C.faint,borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{color:C.grayLight,fontSize:10}}>Sem treinos registrados esta semana</span></div>}
+      {acwrReal&&acwr>1.3&&<div style={{marginTop:10,padding:"8px 10px",background:C.amberBg,borderRadius:5,border:"1px solid "+C.amber+"30",fontSize:11,color:C.amber,fontWeight:500}}>⚠ Reduza volume 15% esta semana.</div>}
     </div>
+
+    {/* ── Corpo ── */}
+    <div style={{marginTop:4}}><BodyView activity={activity} onSaveBodyLog={onSaveBodyLog}/></div>
   </div>;
 }
 
-function BodyView({activity}){
-  var[m,sM]=useState({peso:"",gordura:"",cintura:"",quadril:"",braco:"",coxa:""});
+function BodyView({activity,onSaveBodyLog}){
+  var bodyLogs=activity?activity.bodyLogs||[]:[];
+  var[peso,sPeso]=useState("");
+  var[gordura,sGordura]=useState("");
+  var[cintura,sCintura]=useState("");
+  var[quadril,sQuadril]=useState("");
+  var[braco,sBraco]=useState("");
+  var[coxa,sCoxa]=useState("");
+  var[goal,sGoal]=useState(activity?activity.weightGoal||"":"");
   var[saved,sSaved]=useState(false);
-  function set(k,v){sM(function(p){var n=Object.assign({},p);n[k]=v;return n;});}
-  var imc=m.peso&&activity&&activity.height?parseFloat((parseFloat(m.peso)/Math.pow(parseFloat(activity.height)/100,2)).toFixed(1)):null;
+
+  var latest=bodyLogs.length>0?bodyLogs[bodyLogs.length-1]:null;
+
+  var imc=peso&&activity&&activity.height?parseFloat((parseFloat(peso)/Math.pow(parseFloat(activity.height)/100,2)).toFixed(1)):null;
   var imcStatus=imc?imc<18.5?"Abaixo do Peso":imc<25?"Peso Normal":imc<30?"Sobrepeso":"Obesidade":null;
   var imcColor=imc?imc<18.5?C.blue:imc<25?C.green:imc<30?C.amber:C.red:null;
+
+  function save(){
+    if(!peso)return;
+    var entry={date:new Date().toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"}),ts:Date.now(),w:parseFloat(peso),gordura:gordura||null,cintura:cintura||null,quadril:quadril||null,braco:braco||null,coxa:coxa||null};
+    if(onSaveBodyLog)onSaveBodyLog(entry,goal);
+    sSaved(true);
+    setTimeout(function(){sSaved(false);},2500);
+  }
+
   return<div style={{display:"flex",flexDirection:"column",gap:10}}>
+    {/* Meta de peso */}
     <div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"14px 16px"}}>
-      <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",marginBottom:12}}>COMPOSIÇÃO CORPORAL</div>
+      <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",marginBottom:10}}>META DE PESO</div>
+      <div style={{display:"flex",gap:10,alignItems:"flex-end"}}>
+        <div style={{flex:1}}><Inp label="Meta (kg)" value={goal} onChange={sGoal} type="number" placeholder="74.0"/></div>
+        {latest&&<div style={{textAlign:"right",paddingBottom:2}}>
+          <div style={{color:C.grayLight,fontSize:9}}>Atual</div>
+          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:20,color:C.text,lineHeight:1}}>{latest.w} kg</div>
+        </div>}
+      </div>
+      {latest&&goal&&<div style={{marginTop:8,padding:"8px 10px",background:parseFloat(latest.w)<=parseFloat(goal)?C.green+"0E":C.faint,borderRadius:5,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <span style={{color:C.gray,fontSize:10}}>{parseFloat(latest.w)<=parseFloat(goal)?"🎯 Meta atingida!":"Faltam "+Math.abs(latest.w-parseFloat(goal)).toFixed(1)+" kg"}</span>
+        <span style={{color:parseFloat(latest.w)<=parseFloat(goal)?C.green:C.red,fontWeight:700,fontSize:11}}>{latest.w+" → "+goal+" kg"}</span>
+      </div>}
+    </div>
+
+    {/* Histórico */}
+    {bodyLogs.length>1&&<div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"14px 16px"}}>
+      <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",marginBottom:8}}>EVOLUÇÃO DO PESO</div>
+      <Sparkline data={bodyLogs.slice(-8).map(function(l){return l.w;})} color={C.red} h={52} showDots/>
+      <div style={{display:"flex",justifyContent:"space-between",marginTop:4}}>
+        <span style={{color:C.grayLight,fontSize:8}}>{bodyLogs[Math.max(0,bodyLogs.length-8)].date}</span>
+        <span style={{color:C.grayLight,fontSize:8}}>{bodyLogs[bodyLogs.length-1].date}</span>
+      </div>
+    </div>}
+
+    {/* Medidas */}
+    <div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"14px 16px"}}>
+      <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",marginBottom:10}}>REGISTRAR MEDIDAS</div>
+      {latest&&<div style={{background:C.faint,borderRadius:6,padding:"10px 12px",marginBottom:10,display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6}}>
+        {[{l:"Peso",v:latest.w,u:"kg"},{l:"Gordura",v:latest.gordura,u:"%"},{l:"Cintura",v:latest.cintura,u:"cm"},{l:"Quadril",v:latest.quadril,u:"cm"},{l:"Braço",v:latest.braco,u:"cm"},{l:"Coxa",v:latest.coxa,u:"cm"}].map(function(f){return<div key={f.l} style={{textAlign:"center"}}>
+          <div style={{color:C.grayLight,fontSize:7,fontWeight:700,letterSpacing:.5}}>{f.l.toUpperCase()}</div>
+          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:14,color:f.v?C.text:C.grayLight,lineHeight:1.2}}>{f.v||"—"}</div>
+          {f.v&&<div style={{color:C.grayLight,fontSize:7}}>{f.u}</div>}
+        </div>;})}
+        <div style={{gridColumn:"1/-1",textAlign:"right",color:C.grayLight,fontSize:8}}>{"Último: "+latest.date}</div>
+      </div>}
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-        {[{k:"peso",l:"Peso (kg)",p:"78.0"},{k:"gordura",l:"% Gordura",p:"12.4"},{k:"cintura",l:"Cintura (cm)",p:"82"},{k:"quadril",l:"Quadril (cm)",p:"96"},{k:"braco",l:"Braço (cm)",p:"38"},{k:"coxa",l:"Coxa (cm)",p:"56"}].map(function(f){return<div key={f.k}>
-          <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.6,marginBottom:3}}>{f.l.toUpperCase()}</div>
-          <input type="number" step="0.1" value={m[f.k]} placeholder={f.p} onChange={function(e){set(f.k,e.target.value);}} style={{width:"100%",background:C.faint,border:"1px solid "+C.border,borderRadius:5,padding:"9px 10px",fontSize:14,outline:"none",minHeight:40,color:C.text,fontWeight:600}}/>
+        {[[peso,sPeso,"Peso (kg) *","78.0"],[gordura,sGordura,"% Gordura","12.4"],[cintura,sCintura,"Cintura (cm)","82"],[quadril,sQuadril,"Quadril (cm)","96"],[braco,sBraco,"Braço (cm)","38"],[coxa,sCoxa,"Coxa (cm)","56"]].map(function(f,i){return<div key={i}>
+          <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.5,marginBottom:3}}>{f[2].toUpperCase()}</div>
+          <input type="number" step="0.1" value={f[0]} placeholder={f[3]} onChange={function(e){f[1](e.target.value);}} style={{width:"100%",background:C.faint,border:"1px solid "+C.border,borderRadius:5,padding:"9px 10px",fontSize:13,outline:"none",minHeight:40,color:C.text,fontWeight:600}}/>
         </div>;})}
       </div>
-      {imc&&<div style={{marginTop:12,padding:"10px 12px",background:imcColor+"0A",border:"1px solid "+imcColor+"22",borderRadius:6,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-        <div>
-          <div style={{color:C.grayLight,fontSize:8,fontWeight:700,letterSpacing:.6,marginBottom:1}}>IMC</div>
-          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:26,color:imcColor,lineHeight:1}}>{imc}</div>
-        </div>
-        <div style={{textAlign:"right"}}>
-          <span style={{background:imcColor+"14",color:imcColor,fontSize:10,fontWeight:700,padding:"3px 8px",borderRadius:4,border:"1px solid "+imcColor+"22"}}>{imcStatus}</span>
-        </div>
+      {imc&&<div style={{marginTop:10,padding:"10px 12px",background:imcColor+"0A",border:"1px solid "+imcColor+"22",borderRadius:6,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div><div style={{color:C.grayLight,fontSize:8,fontWeight:700,marginBottom:1}}>IMC</div><div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:26,color:imcColor,lineHeight:1}}>{imc}</div></div>
+        <span style={{background:imcColor+"14",color:imcColor,fontSize:10,fontWeight:700,padding:"3px 8px",borderRadius:4}}>{imcStatus}</span>
       </div>}
       <div style={{marginTop:10}}>
         {saved
-          ?<div style={{padding:"9px 12px",background:C.green+"0E",borderRadius:5,display:"flex",gap:6,alignItems:"center",border:"1px solid "+C.green+"25"}}><Icon name="check" size={12} color={C.green}/><span style={{color:C.green,fontWeight:700,fontSize:11}}>Medidas salvas</span></div>
-          :<Btn onClick={function(){sSaved(true);setTimeout(function(){sSaved(false);},3000);}} full>Salvar medidas</Btn>}
+          ?<div style={{padding:"9px 12px",background:C.green+"0E",borderRadius:5,display:"flex",gap:6,alignItems:"center",border:"1px solid "+C.green+"25"}}><Icon name="check" size={12} color={C.green}/><span style={{color:C.green,fontWeight:700,fontSize:11}}>Medidas salvas no histórico!</span></div>
+          :<Btn onClick={save} disabled={!peso} full>Salvar medidas</Btn>}
       </div>
     </div>
   </div>;
@@ -1208,7 +1207,6 @@ function PlanTab({activity,onMarkComplete,onXPGain}){
   var[selW,sSelW]=useState(plan?plan.currentWeek:1);
   var[modalData,setModalData]=useState(null);
   var[editSession,setEditSession]=useState(null); /* {sid, weekNum, exIdx, field, val} */
-  var[showNote,sShowNote]=useState(false);
   if(!plan)return<div style={{padding:40,textAlign:"center",color:C.gray}}>Complete o onboarding para gerar seu programa.</div>;
 
   function isUnlocked(wn){
@@ -1232,53 +1230,45 @@ function PlanTab({activity,onMarkComplete,onXPGain}){
   return<div className="au" style={{display:"flex",flexDirection:"column",gap:12,padding:"0 0 20px"}}>
     {modalData&&<WorkoutModal session={modalData.session} week={modalData.week} onClose={function(){setModalData(null);}} onComplete={function(loads){handleComplete(modalData.week.week,modalData.session.id,loads);setModalData(null);}}/>}
 
-    {/* Metodologia colapsável */}
-    <div style={{background:"linear-gradient(160deg,#0A0A0A,#1C1C1C)",borderRadius:12,overflow:"hidden"}}>
-      <button onClick={function(){sShowNote(!showNote);}} style={{width:"100%",background:"none",border:"none",padding:"14px 16px",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}>
-        <div style={{color:"#ffffff55",fontSize:8,fontWeight:700,letterSpacing:2}}>METODOLOGIA DO PROGRAMA</div>
-        <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff44" strokeWidth="2" strokeLinecap="round" style={{width:14,height:14,transform:showNote?"rotate(180deg)":"none",transition:"transform .25s"}}><path d="M19 9l-7 7-7-7"/></svg>
-      </button>
-      {showNote&&<div className="au" style={{padding:"0 16px 14px",color:"#ffffffaa",fontSize:12,lineHeight:1.75}}>{plan.coachNote}</div>}
+    {/* Metodologia */}
+    <div style={{background:C.dark,borderRadius:8,padding:"14px 16px"}}>
+      <div style={{color:"#ffffff33",fontSize:8,fontWeight:700,letterSpacing:2,marginBottom:5}}>METODOLOGIA DO PROGRAMA</div>
+      <div style={{color:"#ffffffaa",fontSize:12,lineHeight:1.7}}>{plan.coachNote}</div>
     </div>
 
     {/* Fases */}
     <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6}}>
-      {plan.phases.map(function(p){return<div key={p.name} style={{background:C.white,borderRadius:10,padding:"12px 10px",borderTop:"3px solid "+p.color,boxShadow:sh.xs}}>
-        <div style={{color:p.color,fontSize:8,fontWeight:700,letterSpacing:.8,marginBottom:3}}>{p.weeks?"S "+p.weeks:""}</div>
+      {plan.phases.map(function(p){return<div key={p.name} style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"10px 12px",borderTop:"3px solid "+p.color}}>
+        <div style={{color:p.color,fontSize:8,fontWeight:700,letterSpacing:.8,marginBottom:2}}>{p.weeks?"S "+p.weeks:""}</div>
         <div style={{color:C.text,fontWeight:700,fontSize:11,lineHeight:1.3}}>{p.name}</div>
       </div>;})}
     </div>
 
-    {/* Semanas — scroll horizontal (Nike/SF style) */}
-    <div style={{background:C.white,borderRadius:12,padding:"14px 14px 10px",boxShadow:sh.sm}}>
-      <div style={{color:C.grayLight,fontSize:8,fontWeight:700,letterSpacing:1,textTransform:"uppercase",marginBottom:10}}>CICLO DE 12 SEMANAS</div>
-      <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:4,scrollbarWidth:"none",WebkitOverflowScrolling:"touch"}}>
+    {/* Semanas grid */}
+    <div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"14px"}}>
+      <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",marginBottom:10}}>PROGRESSO DO CICLO</div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(12,1fr)",gap:2}}>
         {plan.weeks.map(function(w){
           var done=w.sessions.filter(function(s){return s.completed;}).length,tot=w.sessions.length,sel=selW===w.week,unlk=isUnlocked(w.week),allD=done===tot&&tot>0;
-          var bg=sel?"linear-gradient(135deg,"+C.red+","+C.redDk+")":allD?C.green+"14":"#f5f5f5";
-          var col=sel?"#fff":allD?C.green:!unlk?C.grayLight:C.gray;
-          return<button key={w.week} onClick={function(){if(unlk)sSelW(w.week);}} style={{flexShrink:0,minWidth:38,height:52,border:"none",borderRadius:9,cursor:unlk?"pointer":"default",background:bg,color:col,fontSize:12,fontWeight:800,position:"relative",transition:"all .2s",boxShadow:sel?sh.red:"none",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2}}>
-            {!unlk&&!allD?<Icon name="lock" size={9} color={C.grayLight}/>:<>
-              <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:16,lineHeight:1}}>{w.week}</div>
-              {allD&&<div style={{width:5,height:5,borderRadius:"50%",background:sel?"rgba(255,255,255,.7)":C.green}}/>}
-              {!allD&&unlk&&tot>0&&<div style={{fontSize:7,color:sel?"rgba(255,255,255,.6)":C.grayLight}}>{done+"/"+tot}</div>}
-            </>}
+          return<button key={w.week} onClick={function(){sSelW(w.week);}} style={{padding:"5px 0",border:"1px solid "+(sel?C.red:allD?C.green+"44":!unlk?C.border:C.border),borderRadius:4,cursor:unlk?"pointer":"default",background:sel?C.red:allD?C.green+"10":C.faint,color:sel?"#fff":allD?C.green:!unlk?C.grayLight:C.gray,fontSize:9,fontWeight:700,minHeight:26,position:"relative",transition:"all .12s"}}>
+            {!unlk&&!allD?<Icon name="lock" size={9} color={C.grayLight}/>:w.week}
+            {allD&&!sel&&<div style={{position:"absolute",top:1,right:2,width:3,height:3,borderRadius:"50%",background:C.green}}/>}
           </button>;
         })}
       </div>
     </div>
 
     {/* Semana detalhe */}
-    {week&&<div style={{background:C.white,borderRadius:12,overflow:"hidden",boxShadow:sh.sm}}>
+    {week&&<div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,overflow:"hidden"}}>
       {/* Week header */}
-      <div style={{padding:"14px 16px",borderBottom:"1px solid #f5f5f5",display:"flex",justifyContent:"space-between",alignItems:"center",background:"#fafafa"}}>
+      <div style={{padding:"12px 16px",borderBottom:"1px solid "+C.border,display:"flex",justifyContent:"space-between",alignItems:"center",background:C.faint}}>
         <div>
-          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:20,color:C.text,letterSpacing:.5}}>{"SEMANA "+week.week}</div>
+          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,color:C.text,letterSpacing:.5}}>{"SEMANA "+week.week}</div>
           <div style={{color:C.grayLight,fontSize:10,marginTop:1}}>{week.phase+" · "+week.intensity}</div>
         </div>
         <div style={{display:"flex",gap:4}}>
-          {week.isDeload&&<span style={{background:C.green+"14",color:C.green,fontSize:9,fontWeight:700,padding:"4px 9px",borderRadius:5}}>DELOAD</span>}
-          {!ul&&<span style={{background:C.amber+"14",color:C.amber,fontSize:9,fontWeight:700,padding:"4px 9px",borderRadius:5}}>BLOQUEADA</span>}
+          {week.isDeload&&<span style={{background:C.green+"12",color:C.green,fontSize:9,fontWeight:700,padding:"3px 8px",borderRadius:4,border:"1px solid "+C.green+"30"}}>DELOAD</span>}
+          {!ul&&<span style={{background:C.amber+"12",color:C.amber,fontSize:9,fontWeight:700,padding:"3px 8px",borderRadius:4,border:"1px solid "+C.amber+"30"}}>BLOQUEADA</span>}
           {ul&&<span style={{color:C.grayLight,fontSize:9}}>{week.sessions.filter(function(s){return s.completed;}).length+"/"+week.sessions.length+" concluídas"}</span>}
         </div>
       </div>
@@ -1449,160 +1439,182 @@ function AITab({activity,user}){
   var[credits,sCredits]=useState(isPro?999:2);
   var[reports,sReports]=useState([]);
   var[ld,sLd]=useState(false);
+  var[apiErr,sApiErr]=useState("");
   var scrollRef=useRef(null);
   var sp=activity?SPORTS.find(function(s){return s.id===activity.sport;}):null;
   var xp=activity?activity.xp||0:0;
   var sessions=activity?activity.sessions||[]:[];
   var totalSess=sessions.length;
-  var avgRpe=totalSess?parseFloat((sessions.slice(0,6).reduce(function(a,s){return a+(+s.rpe||7.2);},0)/Math.min(6,totalSess)).toFixed(1)):7.2;
+  var avgRpe=totalSess>0?parseFloat((sessions.slice(0,6).reduce(function(a,s){return a+(+s.rpe||0);},0)/Math.max(1,sessions.slice(0,6).filter(function(s){return +s.rpe>0;}).length)).toFixed(1)):0;
   var plan=activity?activity.plan:null;
   var cw=plan?plan.weeks[(plan.currentWeek||1)-1]:null;
   var weekDone=cw?cw.sessions.filter(function(s){return s.completed;}).length:0;
   var weekTotal=cw?cw.sessions.length:0;
   var level=getLevel(xp);
   var nextLevel=getNextLevel(level);
-  var acwr=parseFloat((1.05+Math.random()*.18).toFixed(2));
 
-  function buildAnalysis(){
-    var name=(user?user.name.split(" ")[0]:"ATLETA").toUpperCase();
-    var sportName=(sp?sp.name:"Esporte").toUpperCase();
-    var pos=activity?activity.position||"":"";
-    var phase=cw?cw.phase:"Base";
-    var week=plan?plan.currentWeek:1;
+  /* ── Build prompt from real data ── */
+  function buildPrompt(){
+    var recentTypes=sessions.slice(0,5).map(function(s){return s.type;}).join(", ")||"nenhum";
+    var exercises=sessions.slice(0,3).flatMap(function(s){return (s.exercises||[]).slice(0,3).map(function(e){return e.name||(e.n||"");});}).filter(Boolean).join(", ")||"não registrado";
     var weekPct=weekTotal>0?Math.round((weekDone/weekTotal)*100):0;
-    var volLoad=Math.round(avgRpe*(weekDone||1)*45);
-    var xpToNext=nextLevel?nextLevel.xpNeeded-xp:0;
-    var scoreLabel=weekPct>=70&&avgRpe<=8?"82/100 — APTO PARA TREINO PESADO":weekPct>=50?"65/100 — APTO COM AJUSTES":"51/100 — REVISAR PROTOCOLO";
-    return "╔═══════════════════════════════════════╗\n"+
+    var bodyLogs=activity?activity.bodyLogs||[]:[];
+    var latestWeight=bodyLogs.length>0?bodyLogs[bodyLogs.length-1].w:null;
+    return "Você é o ARES Intelligence Engine, um sistema de análise de performance atlética.\n\n"+
+    "Gere uma ANÁLISE SEMANAL COMPLETA em português para este atleta. Use dados reais fornecidos abaixo.\n\n"+
+    "=== DADOS DO ATLETA ===\n"+
+    "Nome: "+(user?user.name:"Atleta")+"\n"+
+    "Esporte: "+(sp?sp.name:"Não informado")+"\n"+
+    "Posição: "+(activity?activity.position:"—")+"\n"+
+    "Nível: "+(activity?activity.level:"amador")+"\n"+
+    "Peso atual: "+(latestWeight?latestWeight+" kg":"não registrado")+"\n"+
+    "Altura: "+(activity?activity.height||"—":"—")+" cm\n\n"+
+    "=== DADOS DE TREINO ===\n"+
+    "Total de sessões registradas: "+totalSess+"\n"+
+    "RPE médio (últimas sessões): "+(avgRpe>0?avgRpe+"/10":"não registrado")+"\n"+
+    "Semana atual: "+(plan?plan.currentWeek:1)+"/12 — Fase: "+(cw?cw.phase:"Base")+"\n"+
+    "Aderência da semana: "+weekPct+"% ("+weekDone+"/"+weekTotal+" treinos)\n"+
+    "Tipos de treino recentes: "+recentTypes+"\n"+
+    "Exercícios registrados: "+exercises+"\n\n"+
+    "=== FORMATO DA RESPOSTA ===\n"+
+    "Use este formato exato (mantenha os separadores ━━━):\n\n"+
+    "╔═══════════════════════════════════════╗\n"+
     "║   ARES INTELLIGENCE — ANÁLISE SEMANAL   ║\n"+
     "╚═══════════════════════════════════════╝\n\n"+
-    "ATLETA: "+name+"  ·  "+sportName+"\n"+
-    "POSIÇÃO: "+pos+"  ·  NÍVEL: "+level.label.toUpperCase()+"\n"+
-    "SEMANA "+week+"/12  ·  FASE: "+phase.toUpperCase()+"\n"+
-    "DATA: "+new Date().toLocaleDateString("pt-BR")+"\n\n"+
+    "[DATA E IDENTIFICAÇÃO DO ATLETA]\n\n"+
     "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"+
     "📊  ANÁLISE DE CARGA\n"+
-    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"+
-    "ACWR atual:      "+acwr.toFixed(2)+"  →  "+(acwr>1.3?"⚠ ATENÇÃO":"✅ ZONA ÓTIMA")+"\n"+
-    "Volume semana:   "+volLoad+" UA\n"+
-    "RPE médio:       "+avgRpe+"/10\n"+
-    "Aderência:       "+weekPct+"% ("+weekDone+"/"+weekTotal+" sessões)\n\n"+
-    (acwr>1.3
-      ?"→ ACWR acima de 1.3 indica overreaching iminente.\n  Reduza volume 15% esta semana. Qualidade > quantidade.\n\n"
-      :"→ Carga dentro da zona de adaptação ótima.\n  Continue a progressão. Margem para +5% de volume.\n\n")+
     "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"+
-    "🎯  DIAGNÓSTICO\n"+
-    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"+
-    "Sessões acumuladas:  "+totalSess+"\n"+
-    "Próximo nível:       "+(nextLevel?xpToNext+" XP → "+nextLevel.label:"NÍVEL MÁXIMO")+"\n\n"+
-    (totalSess===0
-      ?"→ INÍCIO DE JORNADA: Consistência é o único KPI\n  que importa agora. 3-4 sessões/semana por 4\n  semanas consecutivas antes de progredir carga.\n\n"
-      :totalSess<5
-      ?"→ ADAPTAÇÃO NEURAL: Não aumente cargas ainda.\n  Seu sistema nervoso ainda está criando os padrões\n  motores. Foco em técnica perfeita por 2 semanas.\n\n"
-      :"→ ATLETA ATIVO: Padrão estabelecido. Aplique\n  progressive overload de +2.5-5% por semana nos\n  exercícios principais. Deload a cada 4 semanas.\n\n")+
+    "[análise baseada nos dados reais fornecidos]\n\n"+
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"+
+    "🎯  DIAGNÓSTICO DE PERFORMANCE\n"+
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"+
+    "[diagnóstico específico para o esporte e fase atual]\n\n"+
     "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"+
     "⚡  PRESCRIÇÕES DESTA SEMANA\n"+
-    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"+
-    "TREINO\n"+
-    "→ "+
-    (phase.includes("Base")
-      ?"Mecânica > carga. Construa o padrão de movimento\n  antes de adicionar intensidade."
-      :phase.includes("Pot")||phase.includes("Des")
-      ?"Progressive overload aplicado. +2.5–5kg nos\n  exercícios compostos vs semana anterior."
-      :"Fase de pico. RPE alvo 8–9. Volume -15% vs\n  semana anterior. Qualidade máxima de execução.")+"\n\n"+
-    "NUTRIÇÃO\n"+
-    "→ Proteína: "+(Math.round((activity&&activity.weight?parseFloat(activity.weight):80)*2.0))+
-    "–"+(Math.round((activity&&activity.weight?parseFloat(activity.weight):80)*2.2))+"g/dia (2.0–2.2g/kg)\n"+
-    "→ Carboidrato pré-treino: 30–45g, 60min antes\n"+
-    "→ Janela anabólica: proteína em até 2h pós-treino\n\n"+
-    "RECUPERAÇÃO\n"+
-    "→ Sono: mínimo 7h30 — ideal 8h30 para adaptação\n"+
-    "→ HRV matinal: abaixo da baseline = deload no dia\n"+
-    "→ Crioterapia pós-treino pesado: 12–15min\n\n"+
-    (avgRpe>8.5
-      ?"⚠  ALERTA: RPE cronicamente alto ("+avgRpe+"/10).\n    Indicativo de overreaching. Deload imediato.\n\n"
-      :weekPct<50&&weekTotal>0
-      ?"⚠  ALERTA: Aderência abaixo de 50% esta semana.\n    Principal causa de platô de longo prazo.\n\n"
-      :"")
-    +"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"+
-    "Score de Prontidão: "+scoreLabel+"\n"+
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"+
+    "TREINO\n→ [prescrição específica para a fase]\n\n"+
+    "NUTRIÇÃO\n→ [baseado no peso e esporte]\n\n"+
+    "RECUPERAÇÃO\n→ [recomendações práticas]\n\n"+
+    (totalSess>0?"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🔴  ALERTAS E PONTOS DE ATENÇÃO\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n[alertas reais baseados nos dados]\n\n":"")+
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"+
+    "Score de Prontidão: [X/100 — justificativa]\n"+
     "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"+
     "ARES INTELLIGENCE ENGINE v2 · "+new Date().toLocaleTimeString("pt-BR");
   }
 
-  function gen(){
+  async function gen(){
     if(credits<=0)return;
-    sLd(true);
-    var full=buildAnalysis();
-    var entry={id:Date.now(),date:new Date().toLocaleDateString("pt-BR"),typed:"",full,done:false};
+    sLd(true);sApiErr("");
+    var entryId=Date.now();
+    var entry={id:entryId,date:new Date().toLocaleDateString("pt-BR"),typed:"",full:"",done:false,real:true};
     sReports(function(r){return[entry].concat(r);});
     sCredits(function(c){return c-1;});
-    var i=0;
-    var iv=setInterval(function(){
-      i+=9;
-      sReports(function(r){return r.map(function(rep){return rep.id===entry.id?Object.assign({},rep,{typed:full.slice(0,i)}):rep;});});
-      if(scrollRef.current)scrollRef.current.scrollTop=scrollRef.current.scrollHeight;
-      if(i>=full.length){sLd(false);sReports(function(r){return r.map(function(rep){return rep.id===entry.id?Object.assign({},rep,{typed:full,done:true}):rep;});});clearInterval(iv);}
-    },12);
+
+    try{
+      /* NOTE: In production, move this to a Vercel Edge Function to protect the key.
+         Add VITE_ANTHROPIC_KEY to your Vercel environment variables. */
+      var apiKey=(typeof window!=='undefined'&&window.__ARES_KEY)||((typeof import.meta!=='undefined'&&import.meta.env&&import.meta.env.VITE_ANTHROPIC_KEY)||null);
+      if(!apiKey)throw new Error("VITE_ANTHROPIC_KEY não configurada. Adicione nas variáveis de ambiente do Vercel.");
+
+      var res=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json",
+          "x-api-key":apiKey,
+          "anthropic-version":"2023-06-01",
+          "anthropic-dangerous-direct-browser-access":"true",
+        },
+        body:JSON.stringify({
+          model:"claude-haiku-4-5-20251001",
+          max_tokens:1200,
+          messages:[{role:"user",content:buildPrompt()}]
+        })
+      });
+      var data=await res.json();
+      if(data.error)throw new Error(data.error.message||"Erro na API");
+      var full=data.content&&data.content[0]?data.content[0].text:"Sem resposta";
+
+      /* Typewriter effect */
+      var i=0;
+      var iv=setInterval(function(){
+        i+=10;
+        sReports(function(r){return r.map(function(rep){return rep.id===entryId?Object.assign({},rep,{typed:full.slice(0,i)}):rep;});});
+        if(scrollRef.current)scrollRef.current.scrollTop=scrollRef.current.scrollHeight;
+        if(i>=full.length){
+          sLd(false);
+          sReports(function(r){return r.map(function(rep){return rep.id===entryId?Object.assign({},rep,{typed:full,full:full,done:true}):rep;});});
+          clearInterval(iv);
+        }
+      },12);
+    }catch(err){
+      sApiErr(err.message||"Erro ao conectar com a IA.");
+      sLd(false);
+      sReports(function(r){return r.filter(function(rep){return rep.id!==entryId;});});
+      sCredits(function(c){return c+1;}); /* refund */
+    }
   }
 
   return<div className="au" style={{display:"flex",flexDirection:"column",gap:0,padding:"0 0 24px"}}>
-    {/* Header */}
-    <div style={{background:"linear-gradient(160deg,#0A0A0A,#1C1C1C)",borderRadius:14,padding:"20px 18px",marginBottom:12,position:"relative",overflow:"hidden"}}>
-      <div style={{position:"absolute",top:-30,right:-30,width:140,height:140,borderRadius:"50%",background:C.red+"08"}}/>
-      <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
-        <div style={{width:44,height:44,background:"linear-gradient(135deg,"+C.red+","+C.redDk+")",borderRadius:11,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 4px 14px "+C.red+"44"}}><Icon name="bolt" size={22} color="#fff"/></div>
-        <div style={{flex:1}}>
-          <div style={{color:"#fff",fontWeight:800,fontSize:14,letterSpacing:.3}}>ARES INTELLIGENCE</div>
-          <div style={{color:"#ffffff44",fontSize:10,marginTop:1}}>Carga · Fadiga · Prescrição · Alertas</div>
-        </div>
-        {!isPro&&credits>0&&<div style={{display:"flex",gap:3}}>{[0,1].map(function(i){return<div key={i} style={{width:6,height:6,borderRadius:99,background:i<credits?C.red:"#ffffff18"}}/>;})}</div>}
-      </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:14}}>
-        {[{l:"ACWR",v:acwr.toFixed(2),c:acwr<=1.3?C.green:acwr<=1.5?C.amber:C.red},{l:"RPE MÉD",v:avgRpe,c:avgRpe>=8?C.red:avgRpe>=6?C.amber:C.green},{l:"SESSÕES",v:totalSess,c:"#fff"}].map(function(k){return<div key={k.l} style={{background:"#ffffff0A",borderRadius:9,padding:"10px 8px",textAlign:"center"}}>
-          <div style={{color:"#ffffff33",fontSize:7,fontWeight:700,letterSpacing:.8,marginBottom:4}}>{k.l}</div>
-          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,color:k.c,lineHeight:1}}>{k.v}</div>
-        </div>;})}
-      </div>
-      {!isPro&&credits<=0
-        ?<Btn full onClick={function(){window.open("mailto:contato@aresperformance.app?subject=Upgrade+PRO","_blank");}}>Upgrade para análises ilimitadas →</Btn>
-        :<button onClick={gen} disabled={ld||credits<=0} style={{width:"100%",border:"none",borderRadius:9,background:ld?"#ffffff14":"linear-gradient(135deg,"+C.red+","+C.redDk+")",color:"#fff",fontWeight:700,fontSize:13,padding:"13px",cursor:ld?"default":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,opacity:ld?.7:1,transition:"opacity .2s",minHeight:46}}>
-          {ld?<><Spinner/><span>Analisando...</span></>:<><Icon name="bolt" size={15} color="#fff"/><span>Gerar análise completa</span></>}
-        </button>}
+    <div style={{marginBottom:16}}>
+      <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:26,color:C.text,letterSpacing:.5,lineHeight:1}}>INTELIGÊNCIA</div>
+      <div style={{color:C.grayLight,fontSize:11,marginTop:3}}>Análise personalizada com IA real</div>
     </div>
 
-    {/* Reports — estilizados em cards */}
-    {reports.map(function(r){
-      var sections=r.done?[
-        {icon:"📊",label:"ANÁLISE DE CARGA",color:C.blue,lines:r.full.split("\n").filter(function(l){return l.includes("ACWR")||l.includes("Volume")||l.includes("RPE")||l.includes("Aderência")||l.includes("→"&&l.indexOf("→")<20);}).slice(0,4)},
-        {icon:"🎯",label:"DIAGNÓSTICO",color:C.amber,lines:r.full.split("\n").filter(function(l){return l.includes("Sessões")||l.includes("nível")||l.includes("→"&&l.indexOf("→")<20);}).slice(0,3)},
-        {icon:"⚡",label:"PRESCRIÇÕES",color:C.red,lines:r.full.split("\n").filter(function(l){return l.startsWith("→");}).slice(0,5)},
-      ]:null;
-      return<div key={r.id} className="au" style={{marginBottom:10}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-          <span style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8}}>{r.date}</span>
-          {r.done
-            ?<span style={{background:C.green+"14",color:C.green,fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:4}}>✓ COMPLETO</span>
-            :<div style={{display:"flex",alignItems:"center",gap:5}}><Spinner/><span style={{color:C.grayLight,fontSize:9}}>Gerando análise...</span></div>}
+    {/* API error */}
+    {apiErr&&<div style={{background:C.red+"0E",border:"1px solid "+C.red+"30",borderRadius:6,padding:"10px 12px",marginBottom:10,fontSize:11,color:C.red,fontWeight:500}}>
+      <strong>Erro:</strong> {apiErr}
+      {apiErr.includes("VITE_ANTHROPIC_KEY")&&<div style={{marginTop:6,color:C.gray,fontSize:10}}>Configure a variável VITE_ANTHROPIC_KEY nas configurações do Vercel → Settings → Environment Variables.</div>}
+    </div>}
+
+    {/* Credits */}
+    {!isPro&&<div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"12px 14px",marginBottom:10}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div>
+          <div style={{fontWeight:700,fontSize:12,color:C.text}}>{credits>0?(credits+" análise"+(credits>1?"s":"")+" gratuita"+(credits>1?"s":"")):"Créditos esgotados"}</div>
+          <div style={{color:C.grayLight,fontSize:10,marginTop:1}}>Plano FREE inclui 2 análises com IA real</div>
         </div>
-        {!r.done&&<div style={{background:"#0A0A0A",borderRadius:10,padding:"14px 16px"}}>
-          <div ref={scrollRef} style={{maxHeight:200,overflowY:"auto"}}>
-            <pre style={{color:"#ffffff88",fontSize:10,lineHeight:1.85,fontFamily:"'SF Mono','Fira Code',monospace",whiteSpace:"pre-wrap",margin:0}}>{r.typed}<span style={{color:C.red,animation:"blink .6s infinite"}}>▍</span></pre>
-          </div>
-        </div>}
-        {r.done&&sections&&sections.map(function(sec){return<div key={sec.label} style={{background:C.white,borderRadius:10,padding:"14px 16px",marginBottom:8,boxShadow:sh.sm,borderLeft:"3px solid "+sec.color}}>
-          <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:10}}>
-            <span style={{fontSize:16}}>{sec.icon}</span>
-            <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:1}}>{sec.label}</div>
-          </div>
-          {sec.lines.filter(function(l){return l.trim();}).map(function(l,i){return<div key={i} style={{color:C.text,fontSize:12,lineHeight:1.6,marginBottom:4,paddingLeft:l.startsWith("→")?0:0}}>{l.trim()}</div>;})}
+        {credits<=0?<Btn sm>Upgrade →</Btn>:<div style={{display:"flex",gap:3}}>{[0,1].map(function(i){return<div key={i} style={{width:22,height:4,borderRadius:99,background:i<credits?C.red:C.faint}}/>;})}</div>}
+      </div>
+    </div>}
+
+    {/* Engine */}
+    <div style={{background:C.dark,borderRadius:8,padding:"16px",marginBottom:10}}>
+      <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
+        <div style={{width:40,height:40,background:C.red,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Icon name="bolt" size={20} color="#fff"/></div>
+        <div style={{flex:1}}>
+          <div style={{color:"#fff",fontWeight:700,fontSize:13}}>ARES INTELLIGENCE ENGINE</div>
+          <div style={{color:"#ffffff55",fontSize:10,marginTop:1}}>Claude AI · Análise real baseada nos seus dados</div>
+        </div>
+        {!ld&&<span style={{background:C.green+"20",color:C.green,fontSize:8,fontWeight:700,padding:"2px 6px",borderRadius:3}}>ONLINE</span>}
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6,marginBottom:12}}>
+        {[{l:"SESSÕES",v:totalSess>0?totalSess:"—"},{l:"RPE MED.",v:avgRpe>0?avgRpe:"—"},{l:"SEMANA",v:(plan?plan.currentWeek:1)+"/12"}].map(function(k){return<div key={k.l} style={{background:"#ffffff08",borderRadius:5,padding:"8px 6px",textAlign:"center"}}>
+          <div style={{color:"#ffffff33",fontSize:7,fontWeight:700,letterSpacing:.8,marginBottom:3}}>{k.l}</div>
+          <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:18,color:"#fff",lineHeight:1}}>{k.v}</div>
         </div>;})}
-        {r.done&&<div style={{background:"#0A0A0A",borderRadius:10,padding:"12px 16px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <span style={{color:"#ffffff44",fontSize:9}}>ARES INTELLIGENCE ENGINE v2</span>
-          <button onClick={function(){if(navigator.share){navigator.share({title:"Análise ARES",text:r.full});}}} style={{background:"none",border:"1px solid #ffffff15",borderRadius:5,color:"#ffffff55",fontSize:9,fontWeight:700,padding:"4px 9px",cursor:"pointer"}}>Compartilhar</button>
-        </div>}
-      </div>;
-    })}
+      </div>
+      <Btn onClick={gen} disabled={ld||credits<=0} full icon={ld?undefined:"bolt"} v="primary">
+        {ld?"Analisando com IA...":credits<=0?"Sem créditos — Upgrade":"Gerar análise com IA real"}
+      </Btn>
+      {totalSess===0&&!ld&&<div style={{marginTop:8,color:"#ffffff44",fontSize:9,textAlign:"center"}}>Registre pelo menos 1 treino para análise mais precisa</div>}
+    </div>
+
+    {/* Reports */}
+    {reports.map(function(r){return<div key={r.id} style={{background:C.white,border:"1px solid "+C.border,borderLeft:"3px solid "+(r.real?C.green:C.red),borderRadius:8,padding:"14px 16px",marginBottom:8}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+        <div style={{display:"flex",alignItems:"center",gap:6}}>
+          <span style={{color:C.grayLight,fontSize:9,fontWeight:700}}>{r.date}</span>
+          {r.real&&r.done&&<span style={{background:C.green+"14",color:C.green,fontSize:8,fontWeight:700,padding:"1px 5px",borderRadius:3}}>IA REAL</span>}
+        </div>
+        {r.done
+          ?<span style={{background:C.green+"14",color:C.green,fontSize:9,fontWeight:700,padding:"2px 7px",borderRadius:4}}>COMPLETO</span>
+          :<div style={{display:"flex",alignItems:"center",gap:5}}><Spinner/><span style={{color:C.grayLight,fontSize:9}}>Claude está analisando...</span></div>}
+      </div>
+      <div ref={scrollRef} style={{maxHeight:420,overflowY:"auto",WebkitOverflowScrolling:"touch"}}>
+        <pre style={{color:C.text,fontSize:10.5,lineHeight:1.95,fontFamily:"'SF Mono','Fira Code',monospace",whiteSpace:"pre-wrap",margin:0}}>{r.typed}{!r.done&&<span style={{color:C.red,animation:"blink .6s infinite"}}>▍</span>}</pre>
+      </div>
+    </div>;})}
   </div>;
 }
 
@@ -1611,7 +1623,6 @@ function ProfileTab({user,activity,onLogout,onSaveProfile,onChangeSport}){
   var xp=activity?activity.xp||0:0;
   var[section,setSection]=useState("main");
   var[editing,setEditing]=useState(false);
-  var[measHistory,setMeasHistory]=useState([]);
   var[d,sD]=useState({name:user?user.name:"",age:activity?activity.age||"":"",weight:activity?activity.weight||"":"",height:activity?activity.height||"":""});
   var[billing,sBilling]=useState("mensal");
   function set(k,v){sD(function(p){var n=Object.assign({},p);n[k]=v;return n;});}
@@ -1659,56 +1670,6 @@ function ProfileTab({user,activity,onLogout,onSaveProfile,onChangeSport}){
     </div>
   </div>;
 
-  /* ─── Conquistas ─── */
-  if(section==="conquistas")return<div className="au" style={{display:"flex",flexDirection:"column",gap:0,padding:"0 0 24px"}}>
-    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
-      <button onClick={function(){setSection("main");}} style={{width:30,height:30,borderRadius:5,background:C.faint,border:"1px solid "+C.border,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Icon name="back" size={14} color={C.gray}/></button>
-      <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,color:C.text,letterSpacing:.5}}>CONQUISTAS</div>
-      <span style={{background:C.red+"14",color:C.red,fontSize:10,fontWeight:700,padding:"2px 9px",borderRadius:4,marginLeft:"auto"}}>{computeBadges(activity).filter(function(b){return b.earned;}).length+"/"+BADGES.length}</span>
-    </div>
-    <BadgesView activity={activity}/>
-  </div>;
-
-  /* ─── Medidas corporais ─── */
-  if(section==="medidas")return<div className="au" style={{display:"flex",flexDirection:"column",gap:0,padding:"0 0 24px"}}>
-    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
-      <button onClick={function(){setSection("main");}} style={{width:30,height:30,borderRadius:5,background:C.faint,border:"1px solid "+C.border,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Icon name="back" size={14} color={C.gray}/></button>
-      <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,color:C.text,letterSpacing:.5}}>MEDIDAS</div>
-    </div>
-    <BodyView activity={activity}/>
-    {measHistory.length>0&&<div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,padding:"14px 16px",marginTop:10}}>
-      <div style={{color:C.grayLight,fontSize:9,fontWeight:700,letterSpacing:.8,textTransform:"uppercase",marginBottom:10}}>HISTÓRICO</div>
-      <div style={{display:"flex",flexDirection:"column",gap:6}}>
-        {measHistory.slice(0,5).map(function(m,i){return<div key={i} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"8px 10px",background:C.faint,borderRadius:6}}>
-          <span style={{color:C.grayLight,fontSize:10}}>{m.date}</span>
-          <div style={{display:"flex",gap:12}}>
-            {m.peso&&<span style={{fontSize:11,fontWeight:700,color:C.text}}>{m.peso}<span style={{color:C.grayLight,fontWeight:400}}> kg</span></span>}
-            {m.cintura&&<span style={{fontSize:11,fontWeight:700,color:C.blue}}>{m.cintura}<span style={{color:C.grayLight,fontWeight:400}}> cm cintura</span></span>}
-          </div>
-        </div>;})}
-      </div>
-    </div>}
-  </div>;
-
-  /* ─── Ranking ─── */
-  if(section==="ranking")return<div className="au" style={{display:"flex",flexDirection:"column",gap:0,padding:"0 0 24px"}}>
-    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
-      <button onClick={function(){setSection("main");}} style={{width:30,height:30,borderRadius:5,background:C.faint,border:"1px solid "+C.border,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Icon name="back" size={14} color={C.gray}/></button>
-      <div style={{fontFamily:"'Bebas Neue',sans-serif",fontSize:22,color:C.text,letterSpacing:.5}}>RANKING</div>
-    </div>
-    <div style={{background:C.dark,borderRadius:8,padding:"14px 16px",marginBottom:12}}>
-      <div style={{color:"#ffffff44",fontSize:9,fontWeight:700,letterSpacing:2,marginBottom:4}}>SEU NÍVEL</div>
-      <div style={{display:"flex",alignItems:"center",gap:12}}>
-        <div style={{width:44,height:44,borderRadius:8,background:getLevel(xp).color,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Bebas Neue',sans-serif",fontSize:22,color:"#fff"}}>{getLevel(xp).rank}</div>
-        <div>
-          <div style={{color:"#fff",fontWeight:700,fontSize:14}}>{getLevel(xp).label}</div>
-          <div style={{color:"#ffffff55",fontSize:10}}>{xp.toLocaleString()+" XP acumulados"}</div>
-        </div>
-      </div>
-    </div>
-    <LeaderboardView user={user} activity={activity}/>
-  </div>;
-
   /* ─── Trocar esporte ─── */
   if(section==="sport")return<div className="au" style={{display:"flex",flexDirection:"column",gap:0,padding:"0 0 24px"}}>
     <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:16}}>
@@ -1752,16 +1713,9 @@ function ProfileTab({user,activity,onLogout,onSaveProfile,onChangeSport}){
 
     {/* Menu items */}
     <div style={{background:C.white,border:"1px solid "+C.border,borderRadius:8,overflow:"hidden",marginBottom:10}}>
-      {[
-        {id:"conquistas",label:"Conquistas",icon:"trophy",desc:computeBadges(activity).filter(function(b){return b.earned;}).length+"/"+BADGES.length+" desbloqueadas",badge:computeBadges(activity).filter(function(b){return b.earned;}).length},
-        {id:"medidas",label:"Medidas Corporais",icon:"chart",desc:"Peso, composição e evolução"},
-        {id:"ranking",label:"Ranking",icon:"star",desc:"Sua posição entre atletas"},
-        {id:"sport",label:"Trocar esporte",icon:"sport",desc:"Alterar modalidade principal"},
-        {id:"plans",label:"Planos ARES",icon:"star",desc:"Upgrade de assinatura"},
-      ].map(function(m,i,arr){return<div key={m.id} onClick={function(){setSection(m.id);}} style={{display:"flex",alignItems:"center",gap:12,padding:"13px 14px",cursor:"pointer",borderBottom:i<arr.length-1?"1px solid "+C.border:"none",background:C.white,transition:"background .12s"}}>
+      {[{id:"sport",label:"Trocar esporte",icon:"sport",desc:"Alterar modalidade principal"},{id:"plans",label:"Planos ARES",icon:"star",desc:"Upgrade de assinatura"}].map(function(m,i){return<div key={m.id} onClick={function(){setSection(m.id);}} style={{display:"flex",alignItems:"center",gap:12,padding:"13px 14px",cursor:"pointer",borderBottom:i===0?"1px solid "+C.border:"none",background:C.white,transition:"background .12s"}}>
         <div style={{width:32,height:32,background:C.faint,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}><Icon name={m.icon} size={16} color={C.gray}/></div>
         <div style={{flex:1}}><div style={{fontWeight:600,fontSize:13,color:C.text}}>{m.label}</div><div style={{color:C.grayLight,fontSize:10,marginTop:1}}>{m.desc}</div></div>
-        {m.badge>0&&<span style={{background:C.red,color:"#fff",fontSize:9,fontWeight:700,padding:"1px 6px",borderRadius:99,minWidth:18,textAlign:"center"}}>{m.badge}</span>}
         <svg viewBox="0 0 24 24" fill="none" stroke={C.grayLight} strokeWidth="2" strokeLinecap="round" style={{width:14,height:14,flexShrink:0}}><path d="M9 18l6-6-6-6"/></svg>
       </div>;})}
     </div>
@@ -1798,12 +1752,11 @@ function ProfileTab({user,activity,onLogout,onSaveProfile,onChangeSport}){
 
 /* ─── MAIN APP ───────────────────────────────────────────── */
 function MainApp({user,initialActivity,onSaveSession,onSavePlanProgress,onSaveActivity,onSaveProfile,onLogout}){
+  usePWA();
   var[tab,sTab]=useState("home");
   var[activities,setActivities]=useState(initialActivity?[initialActivity]:[]);
   var[showOb,sShowOb]=useState(false);
   var[showLU,sShowLU]=useState(null);
-  var[badgeToast,sBadgeToast]=useState(null);
-  var prevBadgesRef=React.useRef(null);
   var activeIdx=0;
   var userPlan=getEffectivePlan(user);
   var ca=activities[activeIdx]||null;
@@ -1816,26 +1769,11 @@ function MainApp({user,initialActivity,onSaveSession,onSavePlanProgress,onSaveAc
     }
   },[]);
 
-  /* Badge unlock detection */
-  useEffect(function(){
-    var ca=activities[0]||null;
-    if(!ca)return;
-    var current=computeBadges(ca).filter(function(b){return b.earned;}).map(function(b){return b.id;});
-    var prev=prevBadgesRef.current;
-    if(prev!==null){
-      var newOnes=current.filter(function(id){return prev.indexOf(id)<0;});
-      if(newOnes.length>0){
-        var badge=BADGES.find(function(b){return b.id===newOnes[0];});
-        if(badge){setTimeout(function(){sBadgeToast(badge);setTimeout(function(){sBadgeToast(null);},4000);},600);}
-      }
-    }
-    prevBadgesRef.current=current;
-  },[activities]);
-
   var addSession=useCallback(function(s){
     setActivities(function(prev){
-      var updated=prev.map(function(a,i){return i===activeIdx?Object.assign({},a,{sessions:[s].concat(a.sessions||[])}):a;});
-      if(onSaveSession)onSaveSession(s,updated[activeIdx]);
+      var withTs=Object.assign({},s,{ts:s.ts||Date.now()});
+      var updated=prev.map(function(a,i){return i===activeIdx?Object.assign({},a,{sessions:[withTs].concat(a.sessions||[])}):a;});
+      if(onSaveSession)onSaveSession(withTs,updated[activeIdx]);
       return updated;
     });
   },[activeIdx]);
@@ -1862,6 +1800,19 @@ function MainApp({user,initialActivity,onSaveSession,onSavePlanProgress,onSaveAc
         return Object.assign({},a,{xp:nxp});
       });
       if(onSavePlanProgress)onSavePlanProgress(updated[activeIdx]);
+      return updated;
+    });
+  },[activeIdx]);
+
+  var saveBodyLog=useCallback(function(entry,goalVal){
+    setActivities(function(prev){
+      var updated=prev.map(function(a,i){
+        if(i!==activeIdx)return a;
+        var logs=(a.bodyLogs||[]).concat([entry]);
+        var na=Object.assign({},a,{bodyLogs:logs,weightGoal:goalVal?parseFloat(goalVal):a.weightGoal});
+        if(onSaveActivity)onSaveActivity(na);
+        return na;
+      });
       return updated;
     });
   },[activeIdx]);
@@ -1895,41 +1846,30 @@ function MainApp({user,initialActivity,onSaveSession,onSavePlanProgress,onSaveAc
         <Btn onClick={function(){sShowLU(null);}} full>CONTINUAR →</Btn>
       </div>
     </div>}
-    {badgeToast&&<div className="sld" onClick={function(){sBadgeToast(null);}} style={{position:"fixed",top:"calc(60px + "+SAT+")",left:"50%",transform:"translateX(-50%)",zIndex:250,background:C.dark,border:"1px solid "+badgeToast.color+"44",borderRadius:10,padding:"12px 18px",display:"flex",alignItems:"center",gap:12,boxShadow:"0 8px 32px rgba(0,0,0,.4)",cursor:"pointer",minWidth:260,maxWidth:320}}>
-      <div className="pls" style={{width:44,height:44,borderRadius:9,background:badgeToast.color+"20",border:"1px solid "+badgeToast.color+"44",display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,flexShrink:0}}>{badgeToast.icon}</div>
-      <div>
-        <div style={{color:badgeToast.color,fontSize:9,fontWeight:700,letterSpacing:2,marginBottom:2}}>CONQUISTA DESBLOQUEADA</div>
-        <div style={{color:"#fff",fontWeight:700,fontSize:14}}>{badgeToast.name}</div>
-        <div style={{color:"#ffffff66",fontSize:11}}>{badgeToast.desc}</div>
-      </div>
-    </div>}
     <div style={{background:C.white,borderBottom:"1px solid "+C.border,padding:"0 16px",paddingTop:SAT,display:"flex",alignItems:"center",gap:10,position:"sticky",top:0,zIndex:100,boxShadow:sh.xs,minHeight:"calc(48px + "+SAT+")"}}>
       <div style={{flex:1}}><AresLogo size={28}/></div>
       {sp&&<div style={{padding:"4px 10px",background:C.faint,border:"1px solid "+C.border,borderRadius:5,fontSize:10,fontWeight:600,color:C.text}}>{sp.icon+" "+sp.name}</div>}
       <div onClick={function(){sTab("me");}} style={{width:30,height:30,background:C.red,borderRadius:5,display:"flex",alignItems:"center",justifyContent:"center",color:"#fff",fontFamily:"'Bebas Neue',sans-serif",fontSize:12,cursor:"pointer",flexShrink:0}}>{(user?user.name:"A").charAt(0).toUpperCase()}</div>
     </div>
     <div style={{position:"fixed",bottom:0,left:0,right:0,zIndex:100}}>
-      <div style={{background:"rgba(255,255,255,.97)",backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",borderTop:"1px solid #f0f0f0",display:"flex",alignItems:"center",justifyContent:"space-around",paddingBottom:SAB,height:"calc(62px + "+SAB+")",boxShadow:"0 -4px 28px rgba(0,0,0,.07)"}}>
+      <div style={{background:C.white,borderTop:"1px solid "+C.border,display:"flex",alignItems:"flex-end",justifyContent:"space-around",paddingBottom:SAB,minHeight:56}}>
         {TABS.map(function(t){
-          if(t.fab)return<div key="fab" style={{position:"relative",top:-16}}>
-            <button onClick={function(){sTab("reg");}} style={{width:54,height:54,borderRadius:16,background:"linear-gradient(145deg,"+C.red+","+C.redDk+")",border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 6px 20px "+C.red+"55",transform:tab==="reg"?"scale(.92)":"scale(1)",transition:"transform .15s ease"}}>
-              <Icon name="reg" size={24} color="#fff"/>
+          if(t.fab)return<div key="fab" style={{marginTop:-18,marginBottom:2}}>
+            <button onClick={function(){sTab("reg");}} style={{width:48,height:48,borderRadius:8,background:C.red,border:"none",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 3px 10px "+C.red+"44",transform:tab==="reg"?"scale(.95)":"scale(1)",transition:"transform .15s"}}>
+              <Icon name="reg" size={22} color="#fff"/>
             </button>
           </div>;
-          var active=tab===t.id;
-          return<button key={t.id} onClick={function(){sTab(t.id);}} style={{flex:1,height:"100%",border:"none",cursor:"pointer",background:"transparent",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:4,transition:"all .2s",position:"relative",WebkitTapHighlightColor:"transparent"}}>
-            {active&&<div style={{position:"absolute",top:0,left:"22%",right:"22%",height:2,background:C.red,borderRadius:"0 0 3px 3px"}}/>}
-            <div style={{width:32,height:32,borderRadius:9,background:active?C.red+"12":"transparent",display:"flex",alignItems:"center",justifyContent:"center",transition:"background .2s"}}>
-              <Icon name={t.icon} size={20} color={active?C.red:"#BBBBBB"}/>
-            </div>
-            <div style={{fontSize:9,fontWeight:active?800:500,color:active?C.red:"#BBBBBB",letterSpacing:active?.4:.2,transition:"all .2s"}}>{t.label}</div>
+          return<button key={t.id} onClick={function(){sTab(t.id);}} style={{flex:1,padding:"7px 4px 3px",border:"none",cursor:"pointer",background:"transparent",display:"flex",flexDirection:"column",alignItems:"center",gap:1,maxWidth:64,transition:"opacity .15s",opacity:tab===t.id?1:.55}}>
+            <Icon name={t.icon} size={22} color={tab===t.id?C.red:C.grayLight}/>
+            <div style={{fontSize:9,fontWeight:700,color:tab===t.id?C.red:C.grayLight,letterSpacing:.3}}>{t.label}</div>
+            {tab===t.id&&<div style={{width:14,height:2,borderRadius:0,background:C.red}}/>}
           </button>;
         })}
       </div>
     </div>
     <div style={{maxWidth:800,margin:"0 auto",padding:"14px 14px calc(72px + "+SAB+")"}}>
       <div key={tab} className="au">
-        {tab==="home"&&<DashboardTab activity={ca} user={Object.assign({},user,{plan:userPlan})} onGoToPlan={function(){sTab("plan");}}/>}
+        {tab==="home"&&<DashboardTab activity={ca} user={Object.assign({},user,{plan:userPlan})} onGoToPlan={function(){sTab("plan");}} onSaveBodyLog={saveBodyLog}/>}
         {tab==="plan"&&<PlanTab activity={ca} onMarkComplete={markComplete} onXPGain={gainXP}/>}
         {tab==="reg"&&<RegisterTab onSave={addSession} activity={ca} onXPGain={gainXP}/>}
         {tab==="ai"&&<AITab activity={ca} user={Object.assign({},user,{plan:userPlan})}/>}

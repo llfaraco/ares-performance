@@ -5,7 +5,6 @@ export function useAresData(user) {
   var _data = useState(null), data = _data[0], setData = _data[1];
   var _loading = useState(true), loading = _loading[0], setLoading = _loading[1];
 
-  // Carrega dados do usuário ao logar
   useEffect(function () {
     if (!user) { setData(null); setLoading(false); return; }
     loadAll();
@@ -14,7 +13,6 @@ export function useAresData(user) {
   async function loadAll() {
     setLoading(true);
     try {
-      // Carrega perfil + activity salva
       var { data: profile } = await supabase
         .from("profiles")
         .select("*")
@@ -22,7 +20,6 @@ export function useAresData(user) {
         .single();
 
       if (profile && profile.sport) {
-        // Carrega logs de treino
         var { data: logs } = await supabase
           .from("workout_logs")
           .select("*")
@@ -30,30 +27,42 @@ export function useAresData(user) {
           .order("completed_at", { ascending: false })
           .limit(50);
 
-        // Carrega métricas
         var { data: metrics } = await supabase
           .from("metrics")
           .select("*")
           .eq("user_id", user.id)
           .order("recorded_at", { ascending: false });
 
-        // Reconstrói o objeto de activity a partir do perfil salvo
         var savedActivity = profile.activity_json
           ? JSON.parse(profile.activity_json)
           : null;
 
+        // Merge workout_logs sessions into activity.sessions
+        // (workout_logs is source of truth for session list)
+        var mappedSessions = (logs || []).map(function (l) {
+          var notes = {};
+          try { notes = l.notes ? JSON.parse(l.notes) : {}; } catch(e) {}
+          return {
+            id: l.id,
+            date: new Date(l.completed_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
+            ts: new Date(l.completed_at).getTime(), // ← timestamp real para ACWR
+            type: notes.type || "Treino",
+            duration: l.duration_minutes,
+            rpe: notes.rpe || null,
+            exercises: notes.exercises || [],
+            source: notes.source || "structured",
+          };
+        });
+
+        // Merge sessions into savedActivity so App.jsx has full data
+        var mergedActivity = savedActivity
+          ? Object.assign({}, savedActivity, { sessions: mappedSessions })
+          : null;
+
         setData({
           profile: profile,
-          activity: savedActivity,
-          sessions: (logs || []).map(function (l) {
-            return {
-              id: l.id,
-              date: new Date(l.completed_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
-              type: l.notes ? JSON.parse(l.notes).type : "Treino",
-              duration: l.duration_minutes,
-              rpe: l.notes ? JSON.parse(l.notes).rpe : null,
-            };
-          }),
+          activity: mergedActivity,
+          sessions: mappedSessions,
           metrics: metrics || [],
         });
       } else {
@@ -66,7 +75,6 @@ export function useAresData(user) {
     setLoading(false);
   }
 
-  // Salva perfil e activity (onboarding + dados pessoais)
   var saveActivity = useCallback(async function (activityData) {
     if (!user) return;
     try {
@@ -86,7 +94,6 @@ export function useAresData(user) {
     }
   }, [user]);
 
-  // Salva dados pessoais do perfil
   var saveProfile = useCallback(async function (profileData) {
     if (!user) return;
     try {
@@ -98,17 +105,21 @@ export function useAresData(user) {
     }
   }, [user]);
 
-  // Salva sessão de treino
   var saveSession = useCallback(async function (session, activityData) {
     if (!user) return;
     try {
       await supabase.from("workout_logs").insert({
         user_id: user.id,
         duration_minutes: session.duration || 60,
-        notes: JSON.stringify({ type: session.type, rpe: session.rpe, exercises: session.exercises }),
-        completed_at: new Date().toISOString(),
+        notes: JSON.stringify({
+          type: session.type,
+          rpe: session.rpe,
+          exercises: session.exercises || [],
+          source: session.source || "structured",
+        }),
+        completed_at: session.ts ? new Date(session.ts).toISOString() : new Date().toISOString(),
       });
-      // Atualiza o activity_json com o estado atual do plano
+      // Persist plan state + body logs in activity_json
       if (activityData) {
         await supabase.from("profiles").upsert({
           id: user.id,
@@ -120,12 +131,12 @@ export function useAresData(user) {
     }
   }, [user]);
 
-  // Salva progresso do plano (semana concluída)
   var savePlanProgress = useCallback(async function (activityData) {
     if (!user) return;
     try {
       await supabase.from("profiles").upsert({
         id: user.id,
+        // bodyLogs, weightGoal, prs, plan, xp — tudo vai no activity_json
         activity_json: JSON.stringify(activityData),
       });
     } catch (e) {
@@ -133,7 +144,6 @@ export function useAresData(user) {
     }
   }, [user]);
 
-  // Salva métrica
   var saveMetric = useCallback(async function (type, value, unit, label) {
     if (!user) return;
     try {
