@@ -1617,13 +1617,11 @@ function PlanTab({activity,onMarkComplete,onXPGain}){
     return prev.sessions.filter(function(s){return s.completed;}).length===prev.sessions.length&&prev.sessions.length>0;
   }
   function handleComplete(weekNum,sessionId,loads){
-    onMarkComplete(weekNum,sessionId);
     var w=plan.weeks[weekNum-1];
-    if(!w)return;
-    var s=w.sessions.find(function(s){return s.id===sessionId;});
+    var s=w?w.sessions.find(function(s){return s.id===sessionId;}):null;
+    onMarkComplete(weekNum,sessionId,s); // passa dados da sessão para gerar histórico
     if(s)onXPGain(s.xp||XP_SESSION);
-    var willFull=w.sessions.filter(function(s){return s.completed||s.id===sessionId;}).length===w.sessions.length;
-    if(willFull)onXPGain(XP_WEEK);
+    if(w){var willFull=w.sessions.filter(function(s){return s.completed||s.id===sessionId;}).length===w.sessions.length;if(willFull)onXPGain(XP_WEEK);}
   }
   var week=plan.weeks[selW-1];
   var ul=isUnlocked(selW);
@@ -2192,12 +2190,26 @@ function MainApp({user,initialActivity,onSaveSession,onSavePlanProgress,onSaveAc
     });
   },[activeIdx]);
 
-  var markComplete=useCallback(function(wn,sid){
+  var markComplete=useCallback(function(wn,sid,planSession){
     setActivities(function(prev){
       var updated=prev.map(function(a,i){
         if(i!==activeIdx||!a.plan)return a;
+        // 1. Marca sessão como concluída no plano
         var weeks=a.plan.weeks.map(function(w){return w.week!==wn?w:Object.assign({},w,{sessions:w.sessions.map(function(s){return s.id===sid?Object.assign({},s,{completed:true}):s;})});});
-        return Object.assign({},a,{plan:Object.assign({},a.plan,{weeks:weeks,currentWeek:Math.min(wn+1,12)})});
+        // 2. Adiciona ao histórico de sessões (aparece no dashboard)
+        var newSess={
+          id:Date.now(),ts:Date.now(),
+          date:new Date().toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"}),
+          type:planSession?planSession.type:"Treino",
+          duration:planSession?planSession.duration||60:60,
+          rpe:planSession?planSession.rpe||null:null,
+          exercises:planSession?(planSession.main||planSession.exercises||[]):[],
+          source:"plan",
+        };
+        var sessions=[newSess].concat(a.sessions||[]);
+        var na=Object.assign({},a,{sessions,plan:Object.assign({},a.plan,{weeks,currentWeek:Math.min(wn+1,12)})});
+        if(onSaveSession)onSaveSession(newSess,na);
+        return na;
       });
       if(onSavePlanProgress)onSavePlanProgress(updated[activeIdx]);
       return updated;
